@@ -1,0 +1,200 @@
+definitions:
+  controller.Controller:
+    type: object
+info:
+  contact: {}
+  description: 띵동주문이요, 온라인 주문 시스템(Online Ordering System)
+  title: WBA [Backend Final Project]
+  version: "1.0"
+paths:
+  /oos/order/changeOrder:
+    post:
+      consumes:
+      - application/json
+      description: ChangeOrder 주문 변경 - 주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call ChangeOrder, return ok by json.
+  /oos/order/createReview:
+    post:
+      consumes:
+      - application/json
+      description: CreateReview 리뷰 등록 - 주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call CreateReview, return ok by json.
+  /oos/order/newOrder:
+    post:
+      consumes:
+      - application/json
+      description: NewOrder 주문 등록 - 주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call NewOrder, return ok by json.
+  /oos/order/searchMenu:
+    post:
+      consumes:
+      - application/json
+      description: SearchMenu 메뉴 검색 - 주문자, 피주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call SearchMenu, return ok by json.
+  /oos/order/searchOrder:
+    post:
+      consumes:
+      - application/json
+      description: SearchOrder 주문 내역 조회 기능 - 주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call SearchOrder, return ok by json.
+  /oos/order/viewMenu:
+    post:
+      consumes:
+      - application/json
+      description: ViewMenu 메뉴 상세 - 주문자, 피주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call ViewMenu, return ok by json.
+  /oos/seller/createMenu:
+    post:
+      consumes:
+      - application/json
+      description: CreateMenu 메뉴 등록 - 피주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call CreateMenu, return ok by json.
+  /oos/seller/deleteMenu:
+    post:
+      consumes:
+      - application/json
+      description: DeleteMenu 메뉴 삭제 - 피주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call DeleteMenu, return ok by json.
+  /oos/seller/orderStates:
+    post:
+      consumes:
+      - application/json
+      description: OrderStates 주문 내역 조회 - 피주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call OrderStates, return ok by json.
+  /oos/seller/updateMenu:
+    post:
+      consumes:
+      - application/json
+      description: UpdateMenu 메뉴 수정 - 피주문자
+      parameters:
+      - description: User name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call UpdateMenu, return ok by json.
+swagger: "2.0"
