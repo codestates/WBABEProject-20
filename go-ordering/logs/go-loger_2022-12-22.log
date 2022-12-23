@@ -1,0 +1,29 @@
+{"level":"DEBUG","time":"2022-12-22T20:53:48.821+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T20:53:48.845+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T20:53:48.845+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T20:59:27.489+0900","caller":"logger/logger.go:108","msg":"/oos/order/createMenu","status":200,"method":"POST","path":"/oos/order/createMenu","query":"","ip":"::1","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36","errors":"","cost":0.022536}
+{"level":"WARN","time":"2022-12-22T22:10:58.870+0900","caller":"logger/logger.go:68","msg":"warn","-":""}
+{"level":"INFO","time":"2022-12-22T22:11:03.869+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:11:03.869+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"ERROR","time":"2022-12-22T22:11:03.869+0900","caller":"logger/logger.go:75","msg":"error","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:11:10.745+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:11:10.755+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:11:10.756+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:11:32.534+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:11:32.551+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:11:32.552+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:11:50.059+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:11:50.077+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:11:50.078+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:13:00.278+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:13:00.291+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:13:00.291+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:13:20.411+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:13:20.425+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:13:20.425+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:14:55.253+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:14:55.266+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:14:55.266+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"DEBUG","time":"2022-12-22T22:16:46.664+0900","caller":"logger/logger.go:54","msg":"debug","-":"ready server.... "}
+{"level":"INFO","time":"2022-12-22T22:16:46.671+0900","caller":"logger/logger.go:61","msg":"info","-":""}
+{"level":"INFO","time":"2022-12-22T22:16:46.671+0900","caller":"logger/logger.go:61","msg":"info","-":""}
