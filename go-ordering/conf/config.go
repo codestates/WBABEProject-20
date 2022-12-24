@@ -7,23 +7,22 @@ import (
 	"github.com/naoina/toml"
 )
 
-type Work struct {
-	Name     string
-	Desc     string
-	Excute   string
-	Duration int
-	Args     string
-}
-
 type Config struct {
 	Server struct {
 		Mode string
 		Port string
 	}
 
-	DB map[string]map[string]interface{}
+	MongoDB struct {
+		Host string
+		User string
+		Pass string
+		Name string
 
-	Work []Work
+		Database        string
+		MenuCollection  string
+		OrderCollection string
+	}
 
 	Log struct {
 		Level   string

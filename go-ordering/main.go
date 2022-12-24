@@ -42,23 +42,18 @@ func main() {
 	logger.Debug("ready server....")
 
 	//model 모듈 선언
-	fmt.Println("main.start")
-	if mod, err := model.NewModel(); err != nil {
-		//~생략
-		fmt.Println("main.model.NewModel : ", err)
+	if mod, err := model.NewModel(cf); err != nil {
+		logger.Error(err)
 		panic(err)
 	} else if controller, err := ctl.NewCTL(mod); err != nil { //controller 모듈 설정
-		//~생략
-		fmt.Println("main.ctl.NewCTL : ", err)
+		logger.Error(err)
 		panic(err)
 	} else if rt, err := rt.NewRouter(controller); err != nil { //router 모듈 설정
-		//~생략
-		fmt.Println("main.rt.NewRouter : ", err)
+		logger.Error(err)
 		panic(err)
 	} else {
 		fmt.Println("main else ")
 		mapi := &http.Server{
-			//~생략
 			Addr:           cf.Server.Port,
 			Handler:        rt.Idx(),
 			ReadTimeout:    5 * time.Second,
@@ -82,25 +77,19 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := mapi.Shutdown(ctx); err != nil {
-			//log.Fatal("Server Shutdown:", err)
 			logger.Error("Server Shutdown:", err)
 		}
 		// catching ctx.Done(). timeout of 5 seconds.
 		select {
 		case <-ctx.Done():
-			//fmt.Println("timeout 5 secondse.")
 			logger.Info("timeout of 5 seconds.")
 		}
-		//fmt.Println("Server stop")
 		logger.Info("Server exiting")
 
 	}
 
 	if err := g.Wait(); err != nil {
-		//fmt.Println("main.g.Wait : ", err)
 		logger.Error(err)
 	}
-
-	fmt.Println("Server Stop")
 
 }
