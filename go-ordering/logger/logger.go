@@ -51,28 +51,41 @@ func Debug(ctx ...interface{}) {
 		b.WriteString(" ")
 	}
 
-	lg.Debug("debug", zap.String("-", b.String()))
+	lg.Debug("[debug]", zap.String("-", b.String()))
 }
 
 // Info is a convenient alias for Root().Info
 func Info(ctx ...interface{}) {
-	//~
 	var b bytes.Buffer
-	lg.Info("info", zap.String("-", b.String()))
+	for _, str := range ctx {
+		b.WriteString(str.(string))
+		b.WriteString(" ")
+	}
+
+	fmt.Println("[info]", zap.String("-", b.String()))
+	lg.Info("[info]", zap.String("-", b.String()))
 }
 
 // Warn is a convenient alias for Root().Warn
 func Warn(ctx ...interface{}) {
-	//~
 	var b bytes.Buffer
-	lg.Warn("warn", zap.String("-", b.String()))
+	for _, str := range ctx {
+		b.WriteString(str.(string))
+		b.WriteString(" ")
+	}
+
+	lg.Warn("[warn]", zap.String("-", b.String()))
 }
 
 // Error is a convenient alias for Root().Error
 func Error(ctx ...interface{}) {
-	//~
 	var b bytes.Buffer
-	lg.Error("error", zap.String("-", b.String()))
+	for _, str := range ctx {
+		b.WriteString(str.(string))
+		b.WriteString(" ")
+	}
+
+	lg.Error("[error]", zap.String("-", b.String()))
 }
 
 // encoder 옵션 설정

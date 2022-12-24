@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/oos/order/changeOrder": {
             "post": {
-                "description": "ChangeOrder 주문 변경 - 주문자",
+                "description": "ChangeOrder 주문 변경 - 주문자 (수정/취소)",
                 "consumes": [
                     "application/json"
                 ],
@@ -29,17 +29,49 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "주문자 ID",
+                        "name": "OrdererID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "주문취소",
+                            "배달중",
+                            "배달완료"
+                        ],
+                        "type": "string",
+                        "description": "주문 상태",
+                        "name": "OrderStatus",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "주문자 주소",
+                        "name": "OrdererAddress",
+                        "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "주문자 폰번호",
+                        "name": "OrdererPhone",
+                        "in": "path"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.OrdererMenuLink"
                         }
                     }
                 }
@@ -58,8 +90,29 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "주문자 ID",
+                        "name": "OrdererID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "후기",
+                        "name": "OrderComment",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "평점",
+                        "name": "OrderStarGrade",
                         "in": "path",
                         "required": true
                     }
@@ -68,7 +121,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.OrdererMenuLink"
                         }
                     }
                 }
@@ -87,17 +140,49 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "주문자 ID",
+                        "name": "OrdererID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "주문취소",
+                            "배달중",
+                            "배달완료"
+                        ],
+                        "type": "string",
+                        "description": "주문 상태",
+                        "name": "OrderStatus",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "주문자 주소",
+                        "name": "OrdererAddress",
+                        "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "주문자 폰번호",
+                        "name": "OrdererPhone",
+                        "in": "path"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.OrdererMenuLink"
                         }
                     }
                 }
@@ -116,17 +201,81 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "가격",
+                        "name": "Price",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "한국",
+                            "일본",
+                            "중국"
+                        ],
+                        "type": "string",
+                        "description": "원산지",
+                        "name": "CountryOf",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "한식",
+                            "일식",
+                            "중식"
+                        ],
+                        "type": "string",
+                        "description": "메뉴 카테고리",
+                        "name": "Category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "판매중"
+                        ],
+                        "type": "string",
+                        "description": "주문 가능 상태",
+                        "name": "Status",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "아주매움",
+                            "매움",
+                            "보통",
+                            "순한맛"
+                        ],
+                        "type": "string",
+                        "description": "맵기",
+                        "name": "Spicy",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "오늘의 추천메뉴 여부",
+                        "name": "TodayMenu",
+                        "in": "path"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/controller.Menu"
+                            }
                         }
                     }
                 }
@@ -145,8 +294,21 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "주문취소",
+                            "배달중",
+                            "배달완료"
+                        ],
+                        "type": "string",
+                        "description": "주문 상태",
+                        "name": "OrderStatus",
                         "in": "path",
                         "required": true
                     }
@@ -155,7 +317,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/controller.OrdererMenuLink"
+                            }
                         }
                     }
                 }
@@ -174,8 +339,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
                     }
@@ -184,7 +349,52 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.Menu"
+                        }
+                    }
+                }
+            }
+        },
+        "/oos/seller/OrderStatus": {
+            "post": {
+                "description": "OrderStatus 주문 내역 조회 - 피주문자",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "call OrderStatus, return ok by json.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "주문취소",
+                            "배달중",
+                            "배달완료"
+                        ],
+                        "type": "string",
+                        "description": "주문 상태",
+                        "name": "OrderStatus",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/controller.OrdererMenuLink"
+                            }
                         }
                     }
                 }
@@ -203,24 +413,101 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "가격",
+                        "name": "Price",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "한국",
+                            "일본",
+                            "중국"
+                        ],
+                        "type": "string",
+                        "description": "원산지",
+                        "name": "CountryOf",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "한식",
+                            "일식",
+                            "중식"
+                        ],
+                        "type": "string",
+                        "description": "메뉴 카테고리",
+                        "name": "Category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "판매중"
+                        ],
+                        "type": "string",
+                        "description": "주문 가능 상태",
+                        "name": "Status",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "판매 가능 갯수",
+                        "name": "MaxCount",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "아주매움",
+                            "매움",
+                            "보통",
+                            "순한맛"
+                        ],
+                        "type": "string",
+                        "description": "맵기",
+                        "name": "Spicy",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "판매여부",
+                        "name": "IsDisabled",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "오늘의 추천메뉴 여부",
+                        "name": "TodayMenu",
+                        "in": "path"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.Menu"
                         }
                     }
                 }
             }
         },
         "/oos/seller/deleteMenu": {
-            "post": {
+            "put": {
                 "description": "DeleteMenu 메뉴 삭제 - 피주문자",
                 "consumes": [
                     "application/json"
@@ -232,37 +519,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.Controller"
-                        }
-                    }
-                }
-            }
-        },
-        "/oos/seller/orderStates": {
-            "post": {
-                "description": "OrderStates 주문 내역 조회 - 피주문자",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "call OrderStates, return ok by json.",
-                "parameters": [
+                    },
                     {
-                        "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "type": "boolean",
+                        "description": "판매여부",
+                        "name": "IsDisabled",
                         "in": "path",
                         "required": true
                     }
@@ -271,7 +536,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.Menu"
                         }
                     }
                 }
@@ -290,17 +555,92 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User name",
-                        "name": "name",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "가격",
+                        "name": "Price",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "한국",
+                            "일본",
+                            "중국"
+                        ],
+                        "type": "string",
+                        "description": "원산지",
+                        "name": "CountryOf",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "한식",
+                            "일식",
+                            "중식"
+                        ],
+                        "type": "string",
+                        "description": "메뉴 카테고리",
+                        "name": "Category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "판매중"
+                        ],
+                        "type": "string",
+                        "description": "주문 가능 상태",
+                        "name": "Status",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "판매 가능 갯수",
+                        "name": "MaxCount",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "아주매움",
+                            "매움",
+                            "보통",
+                            "순한맛"
+                        ],
+                        "type": "string",
+                        "description": "맵기",
+                        "name": "Spicy",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "판매여부",
+                        "name": "IsDisabled",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "오늘의 추천메뉴 여부",
+                        "name": "TodayMenu",
+                        "in": "path"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Controller"
+                            "$ref": "#/definitions/controller.Menu"
                         }
                     }
                 }
@@ -308,8 +648,91 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controller.Controller": {
-            "type": "object"
+        "controller.Menu": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "description": "메뉴 카테고리",
+                    "type": "string"
+                },
+                "countryOf": {
+                    "description": "원산지",
+                    "type": "string"
+                },
+                "isDisabled": {
+                    "description": "판매여부",
+                    "type": "boolean"
+                },
+                "maxCount": {
+                    "description": "판매 가능 갯수",
+                    "type": "integer"
+                },
+                "menuName": {
+                    "description": "메뉴 이름",
+                    "type": "string"
+                },
+                "popularity": {
+                    "description": "인기도",
+                    "type": "integer"
+                },
+                "price": {
+                    "description": "가격",
+                    "type": "integer"
+                },
+                "sellerName": {
+                    "description": "MenuID     string             ` + "`" + `bson:\"menuID\"` + "`" + `     //메뉴 ID",
+                    "type": "string"
+                },
+                "spicy": {
+                    "description": "맵기",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "주문 가능 상태",
+                    "type": "string"
+                },
+                "todayMenu": {
+                    "description": "오늘의 추천메뉴 여부",
+                    "type": "boolean"
+                }
+            }
+        },
+        "controller.OrdererMenuLink": {
+            "type": "object",
+            "properties": {
+                "menuName": {
+                    "description": "메뉴이름",
+                    "type": "string"
+                },
+                "orderComment": {
+                    "description": "후기",
+                    "type": "string"
+                },
+                "orderNo": {
+                    "description": "주문번호",
+                    "type": "string"
+                },
+                "orderStarGrade": {
+                    "description": "평점",
+                    "type": "integer"
+                },
+                "orderStatus": {
+                    "description": "주문상태",
+                    "type": "string"
+                },
+                "ordererAddress": {
+                    "description": "주문자 주소",
+                    "type": "string"
+                },
+                "ordererID": {
+                    "description": "주문자ID",
+                    "type": "integer"
+                },
+                "ordererPhone": {
+                    "description": "주문자 폰번호",
+                    "type": "integer"
+                }
+            }
         }
     }
 }`
