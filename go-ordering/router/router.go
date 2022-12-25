@@ -4,6 +4,7 @@ package router
 import (
 	ctl "WBABEProject-20/go-ordering/controller"
 	logger "WBABEProject-20/go-ordering/logger"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	swgFiles "github.com/swaggo/files"
@@ -26,9 +27,7 @@ func NewRouter(ctl *ctl.Controller) (*Router, error) {
 // cross domain을 위해 사용
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logger.Info("router.CORS c : ", c)
-
-		//~ 생략
+		fmt.Println("router.CORS c : ", c)
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		//허용할 header 타입에 대해 열거
@@ -46,8 +45,7 @@ func CORS() gin.HandlerFunc {
 // 임의 인증을 위한 함수
 func liteAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logger.Info("router.liteAuth c : ", c)
-		//~ 생략
+		fmt.Println("router.liteAuth c : ", c)
 		if c == nil {
 			c.Abort() // 미들웨어에서 사용, 이후 요청 중지
 			return
@@ -55,7 +53,7 @@ func liteAuth() gin.HandlerFunc {
 		//http 헤더내 "Authorization" 폼의 데이터를 조회
 		auth := c.GetHeader("Authorization")
 		//실제 인증기능이 올수있다. 단순히 출력기능만 처리 현재는 출력예시
-		logger.Info("Authorization-word ", auth)
+		fmt.Println("Authorization-word ", auth)
 
 		c.Next()
 	}
@@ -66,7 +64,6 @@ func (p *Router) Idx() *gin.Engine {
 
 	// 컨피그나 상황에 맞게 gin 모드 설정
 	gin.SetMode(gin.ReleaseMode)
-	// gin.SetMode(gin.DebugMode)
 
 	r := gin.Default() //gin 선언
 
@@ -78,7 +75,7 @@ func (p *Router) Idx() *gin.Engine {
 
 	r.Use(CORS()) //crossdomain 미들웨어 사용 등록
 
-	logger.Info("start server")
+	logger.Info("[router Idx] start server...")
 
 	r.GET("/swagger/:any", ginSwg.WrapHandler(swgFiles.Handler))
 	docs.SwaggerInfo.Host = "localhost" //swagger 정보 등록
@@ -91,7 +88,7 @@ func (p *Router) Idx() *gin.Engine {
 		seller.PUT("/deleteMenu", p.ct.DeleteMenu)
 
 		seller.POST("/searchMenu", p.ct.SearchMenu)
-		seller.POST("/orderStates", p.ct.OrderStatus)
+		seller.POST("/orderStatus", p.ct.OrderStatus)
 
 		seller.POST("/viewMenu", p.ct.ViewMenu)
 
@@ -110,8 +107,11 @@ func (p *Router) Idx() *gin.Engine {
 		order.POST("/newOrder", p.ct.NewOrder)
 		order.POST("/changeOrder", p.ct.ChangeOrder)
 		order.POST("/searchOrder", p.ct.SearchOrder)
+		order.POST("/viewOrder", p.ct.ViewOrder)
 
 		order.POST("/createReview", p.ct.CreateReview)
+
+		order.POST("/searchTodayMenu", p.ct.SearchTodayMenu)
 
 	}
 

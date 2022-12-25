@@ -24,7 +24,6 @@ func NewModel(cfg *conf.Config) (*Model, error) {
 	logger.Info("[model.NewModel] start...")
 
 	cf := cfg.MongoDB
-
 	r := &Model{}
 
 	var err error
@@ -34,6 +33,7 @@ func NewModel(cfg *conf.Config) (*Model, error) {
 		return nil, err
 	} else {
 		logger.Info("[model.NewModel] mongodb connection... ")
+
 		db := r.client.Database(cf.Database)
 		r.colMenu = db.Collection(cf.MenuCollection)
 		r.colOrderLink = db.Collection(cf.OrderCollection)
@@ -43,59 +43,43 @@ func NewModel(cfg *conf.Config) (*Model, error) {
 
 // 메뉴 등록 - 피주문자
 func (p *Model) CreateMenu(menu Menu) Menu {
-	logger.Info("[model.CreateMenu Param] ", menu)
+	fmt.Println("[model.CreateMenu Param] ", menu)
 
-	//menu.CreateDate = primitive.NewDateTimeFromTime(time.Now().AddDate(-1, 0, 0))
-	//menu.ModifyDate = primitive.NewDateTimeFromTime(time.Now().AddDate(-1, 0, 0))
+	menu.MenuID = CreateUUID() //메뉴 ID는 uuid로 설정
 
 	result, err := p.colMenu.InsertOne(context.TODO(), menu)
 	if err != nil {
 		panic(err)
 	}
-	logger.Info("inserted with ID: %s\n", result.InsertedID)
+	fmt.Println("inserted with ID: %s\n", result.InsertedID)
 
 	return menu
 }
 
 // 메뉴 수정 - 피주문자
-func (p *Model) UpdateMenu(menu Menu) Menu {
-	logger.Info("[model.UpdateMenu Param] ", menu)
+func (p *Model) UpdateMenu(menu Menu, updateFilter bson.M) Menu {
+	fmt.Println("[model.UpdateMenu Param] ", menu)
 
-	filter := bson.D{{"sellerID", menu.SellerID}, {"menuID", menu.MenuID}}
+	//메뉴ID 기준으로 메뉴 업데이트
+	filter := bson.D{{"menuID", menu.MenuID}}
 
-	update := bson.M{
-		"$set": bson.M{
-			// "status":     menu.Status,
-			// "maxCount":   menu.MaxCount,
-			// "countryOf":  menu.CountryOf,
-			// "price":      menu.Price,
-			// "spicy":      menu.Spicy,
-			// "popularity": menu.Popularity,
-			// "isDisabled": menu.IsDisabled,
-			// "todayMenu":  menu.TodayMenu,
-			// "category":   menu.Category,
-			//"createDate": menu.CreateDate,
-			//"modifyDate": menu.ModifyDate,
-		},
-	}
-
-	result, err := p.colMenu.UpdateOne(context.Background(), filter, update)
+	result, err := p.colMenu.UpdateOne(context.Background(), filter, updateFilter)
 	if err != nil {
 		logger.Error(err)
 	}
-	logger.Info("[model.UpdateMenu result] ", result)
-	logger.Info("[model.UpdateMenu result.ModifiedCount] ", result.ModifiedCount)
+	fmt.Println("[model.UpdateMenu result] ", result)
+	fmt.Println("[model.UpdateMenu result.ModifiedCount] ", result.ModifiedCount)
 
-	return p.ViewMenu(menu.MenuName)
+	return p.ViewMenu(menu.MenuID)
 }
 
 // 메뉴 삭제 - 피주문자 (삭제하지않고 상태변경으로 비표시)
-func (p *Model) DeleteMenu(menuName string, isDisabled string) Menu {
+func (p *Model) DeleteMenu(menuID string, isDisabled string) Menu {
 
-	logger.Info("[model.DeleteMenu Param menuName] ", menuName)
-	logger.Info("[model.DeleteMenu Param isDisabled] ", isDisabled)
+	fmt.Println("[model.DeleteMenu Param menuID] ", menuID)
+	fmt.Println("[model.DeleteMenu Param isDisabled] ", isDisabled)
 
-	filter := bson.D{{"menuName", menuName}}
+	filter := bson.D{{"menuID", menuID}}
 
 	boolIsDisabled, err := strconv.ParseBool(isDisabled)
 	if err != nil {
@@ -114,24 +98,16 @@ func (p *Model) DeleteMenu(menuName string, isDisabled string) Menu {
 	if err != nil {
 		logger.Error(err)
 	}
-	logger.Info("UpdateOne() result:", result)
+	fmt.Println("UpdateOne() result:", result)
 	fmt.Printf("Documents Updated: %v\n", result.ModifiedCount)
 
 	//메뉴의 상세 내용을 리턴
-	return p.ViewMenu(menuName)
+	return p.ViewMenu(menuID)
 }
 
 // 메뉴 검색 - 주문자, 피주문자
-func (p *Model) SearchMenu(menu Menu) []Menu {
-	logger.Info("[model.SearchMenu Param] ", menu)
-
-	var filter bson.D
-	if menu.MenuName != "" {
-		filter = append(filter, bson.E{"menuName", menu.MenuName})
-	}
-	if menu.Status != "" {
-		filter = append(filter, bson.E{"status", menu.Status})
-	}
+func (p *Model) SearchMenu(filter bson.D) []Menu {
+	fmt.Println("[model.SearchMenu Param] ", filter)
 
 	cursor, err := p.colMenu.Find(context.TODO(), filter)
 	if err != nil {
@@ -145,34 +121,34 @@ func (p *Model) SearchMenu(menu Menu) []Menu {
 		panic(err)
 	}
 
-	logger.Info("[model.SearchMenu menus] ", menus)
+	fmt.Println("[model.SearchMenu menus] ", menus)
 
 	return menus
 }
 
 // 메뉴 상세 - 주문자, 피주문자
-func (p *Model) ViewMenu(menuName string) Menu {
-	logger.Info("[model.ViewMenu Param] ", menuName)
+func (p *Model) ViewMenu(menuID string) Menu {
+	fmt.Println("[model.ViewMenu Param] ", menuID)
 
 	var menu Menu
-	filter := bson.D{{"menuName", menuName}}
+	filter := bson.D{{"menuID", menuID}}
 
 	err := p.colMenu.FindOne(context.TODO(), filter).Decode(&menu)
 	if err != nil {
 		logger.Error(err)
 		panic(err)
 	}
-	logger.Info("[model.ViewMenu menu] ", menu)
+	fmt.Println("[model.ViewMenu menu] ", menu)
 
 	return menu
 }
 
 // 주문 등록 - 주문자
 func (p *Model) NewOrder(omLink OrdererMenuLink) OrdererMenuLink {
-	logger.Info("[model.NewOrder Param] ", omLink)
+	fmt.Println("[model.NewOrder Param] ", omLink)
 
-	//omLink.CreateDate = primitive.NewDateTimeFromTime(time.Now().AddDate(-1, 0, 0))
-	//omLink.ModifyDate = primitive.NewDateTimeFromTime(time.Now().AddDate(-1, 0, 0))
+	omLink.OrderNo = CreateUUID() //Order번호는 uuid로 설정
+	omLink.OrderStatus = "주문확인중"  //주문시 상태 설정
 
 	result, err := p.colOrderLink.InsertOne(context.TODO(), omLink)
 	if err != nil {
@@ -185,14 +161,14 @@ func (p *Model) NewOrder(omLink OrdererMenuLink) OrdererMenuLink {
 }
 
 // 주문 내역 조회 - 피주문자
-func (p *Model) OrderStatus(menuName string, orderStatus string) []OrdererMenuLink {
-	logger.Info("[model.OrderStates Param] ", menuName, ", ", orderStatus)
+func (p *Model) OrderStatus(orderStatus string, sellerID string) []OrdererMenuLink {
+	fmt.Println("[model.OrderStates Param] ", orderStatus, sellerID)
 
 	var filter bson.D
-	if menuName != "" { //메뉴에 따른 주문 들어온 리스트
-		filter = append(filter, bson.E{"menuName", menuName})
+	if sellerID != "" { //판매자 ID 필수
+		filter = append(filter, bson.E{"sellerID", sellerID})
 	}
-	if orderStatus != "" { //주문 들어온 리스트
+	if orderStatus != "" { //주문 들어온 리스트 (상태값에 따른 조회)
 		filter = append(filter, bson.E{"orderStatus", orderStatus})
 	}
 
@@ -208,17 +184,34 @@ func (p *Model) OrderStatus(menuName string, orderStatus string) []OrdererMenuLi
 		panic(err)
 	}
 
-	logger.Info("[model.SearchOrder omLinks] ", omLinks)
+	fmt.Println("[model.SearchOrder omLinks] ", omLinks)
 
 	return omLinks
 }
 
+// 주문 상세 - 주문자, 피주문자
+func (p *Model) ViewOrder(orderNo string) OrdererMenuLink {
+	fmt.Println("[model.ViewOrder Param] ", orderNo)
+
+	var omLink OrdererMenuLink
+	filter := bson.D{{"orderNo", orderNo}}
+
+	err := p.colOrderLink.FindOne(context.TODO(), filter).Decode(&omLink)
+	if err != nil {
+		logger.Error(err)
+		panic(err)
+	}
+	fmt.Println("[model.ViewOrder menu] ", omLink)
+
+	return omLink
+}
+
 // 주문 변경 - 주문자 (수정/취소)
 func (p *Model) ChangeOrder(omLink OrdererMenuLink) OrdererMenuLink {
-	logger.Info("[model.ChangeOrder Param] ", omLink)
+	fmt.Println("[model.ChangeOrder Param] ", omLink)
 
 	//omLink.OrderNO
-	filter := bson.D{{"menuName", omLink.MenuName}, {"ordererID", omLink.OrdererID}}
+	filter := bson.D{{"orderNo", omLink.OrderNo}}
 
 	update := bson.M{
 		"$set": bson.M{
@@ -229,21 +222,21 @@ func (p *Model) ChangeOrder(omLink OrdererMenuLink) OrdererMenuLink {
 		},
 	}
 
-	logger.Info("[model.ChangeOrder filter] ", filter)
+	fmt.Println("[model.ChangeOrder filter] ", filter)
 
 	result, err := p.colOrderLink.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		logger.Error(err)
 	}
-	logger.Info("[model.ChangeOrder result] ", result)
-	logger.Info("[model.ChangeOrder result.ModifiedCount] ", result.ModifiedCount)
+	fmt.Println("[model.ChangeOrder result] ", result)
+	fmt.Println("[model.ChangeOrder result.ModifiedCount] ", result.ModifiedCount)
 
 	return omLink
 }
 
 // 주문 내역 조회 기능 - 주문자
 func (p *Model) SearchOrder(omLink OrdererMenuLink) []OrdererMenuLink {
-	logger.Info("[model.SearchOrder Param] ", omLink)
+	fmt.Println("[model.SearchOrder Param] ", omLink)
 
 	filter := bson.D{{"ordererID", omLink.OrdererID}}
 	if omLink.MenuName != "" {
@@ -265,34 +258,33 @@ func (p *Model) SearchOrder(omLink OrdererMenuLink) []OrdererMenuLink {
 		panic(err)
 	}
 
-	logger.Info("[model.SearchOrder omLinks] ", omLinks)
+	fmt.Println("[model.SearchOrder omLinks] ", omLinks)
 
 	return omLinks
 }
 
 // 리뷰 등록 - 주문자
 func (p *Model) CreateReview(omLink OrdererMenuLink) OrdererMenuLink {
-	logger.Info("[model.CreateReview Param] ", omLink)
+	fmt.Println("[model.CreateReview Param] ", omLink)
 
 	//omLink.OrderNO
-	filter := bson.D{{"menuName", omLink.MenuName}, {"ordererID", omLink.OrdererID}}
+	filter := bson.D{{"orderNo", omLink.OrderNo}}
 
 	update := bson.M{
 		"$set": bson.M{
 			"orderComment":   omLink.OrderComment,
 			"orderStarGrade": omLink.OrderStarGrade,
-			//"modifyDate": omLink.ModifyDate,
 		},
 	}
 
-	logger.Info("[model.CreateReview filter] ", filter)
+	fmt.Println("[model.CreateReview filter] ", filter)
 
 	result, err := p.colOrderLink.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		logger.Error(err)
 	}
-	logger.Info("[model.CreateReview result] ", result)
-	logger.Info("[model.CreateReview result.ModifiedCount] ", result.ModifiedCount)
+	fmt.Println("[model.CreateReview result] ", result)
+	fmt.Println("[model.CreateReview result.ModifiedCount] ", result.ModifiedCount)
 
 	return omLink
 }

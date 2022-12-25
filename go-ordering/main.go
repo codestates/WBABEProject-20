@@ -52,7 +52,7 @@ func main() {
 		logger.Error(err)
 		panic(err)
 	} else {
-		fmt.Println("main else ")
+		logger.Info("[main] else start...")
 		mapi := &http.Server{
 			Addr:           cf.Server.Port,
 			Handler:        rt.Idx(),
