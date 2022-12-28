@@ -6,7 +6,6 @@ import (
 	"WBABEProject-20/go-ordering/logger"
 	"context"
 	"fmt"
-	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -60,8 +59,22 @@ func (p *Model) CreateMenu(menu Menu) Menu {
 func (p *Model) UpdateMenu(menu Menu, updateFilter bson.M) Menu {
 	fmt.Println("[model.UpdateMenu Param] ", menu)
 
+	//메뉴ID의 파라메터가 없는 경우, 판매자ID와 메뉴이름으로 검색
+	// filter := bson.D{{}}
+	// if menu.MenuID != "" {
+	// 	filter = append(filter, bson.E{"menuID", menu.MenuID})
+	// } else {
+	// 	filter = append(filter, bson.E{"sellerID", menu.SellerID})
+	// 	filter = append(filter, bson.E{"menuName", menu.MenuName})
+	// }
+	menuID := menu.MenuID
+	if menuID == "" {
+		menuID = p.GetMenuID(menu.SellerID, menu.MenuName)
+	}
 	//메뉴ID 기준으로 메뉴 업데이트
-	filter := bson.D{{"menuID", menu.MenuID}}
+	filter := bson.D{{"menuID", menuID}}
+
+	fmt.Println("[model.UpdateMenu filter] ", filter)
 
 	result, err := p.colMenu.UpdateOne(context.Background(), filter, updateFilter)
 	if err != nil {
@@ -70,25 +83,27 @@ func (p *Model) UpdateMenu(menu Menu, updateFilter bson.M) Menu {
 	fmt.Println("[model.UpdateMenu result] ", result)
 	fmt.Println("[model.UpdateMenu result.ModifiedCount] ", result.ModifiedCount)
 
-	return p.ViewMenu(menu.MenuID)
+	return p.ViewMenu(menuID)
 }
 
 // 메뉴 삭제 - 피주문자 (삭제하지않고 상태변경으로 비표시)
-func (p *Model) DeleteMenu(menuID string, isDisabled string) Menu {
+func (p *Model) DeleteMenu(menu Menu) Menu {
+
+	menuID := menu.MenuID
+	isDisabled := menu.IsDisabled
+
+	//메뉴ID의 파라메터가 없는 경우, 판매자ID와 메뉴이름으로 검색
+	if menuID == "" {
+		menuID = p.GetMenuID(menu.SellerID, menu.MenuName)
+	}
 
 	fmt.Println("[model.DeleteMenu Param menuID] ", menuID)
 	fmt.Println("[model.DeleteMenu Param isDisabled] ", isDisabled)
 
 	filter := bson.D{{"menuID", menuID}}
-
-	boolIsDisabled, err := strconv.ParseBool(isDisabled)
-	if err != nil {
-		logger.Error(err)
-	}
-
 	update := bson.M{
 		"$set": bson.M{
-			"isDisabled": boolIsDisabled,
+			"isDisabled": isDisabled,
 		},
 	}
 
@@ -137,6 +152,30 @@ func (p *Model) ViewMenu(menuID string) Menu {
 	if err != nil {
 		logger.Error(err)
 		panic(err)
+	}
+	fmt.Println("[model.ViewMenu menu] ", menu)
+
+	return menu
+}
+
+// 메뉴 ID 검색
+func (p *Model) GetMenuID(sellerID string, menuName string) string {
+	sMenu := p.SearchMenuFindOne(sellerID, menuName)
+	return sMenu.MenuID
+}
+
+// 메뉴 상세 - 주문자, 피주문자
+func (p *Model) SearchMenuFindOne(sellerID string, menuName string) Menu {
+	fmt.Println("[model.ViewMenu Param] ", sellerID)
+	fmt.Println("[model.ViewMenu Param] ", menuName)
+
+	var menu Menu
+	filter := bson.D{{"sellerID", sellerID}, {"menuName", menuName}}
+
+	err := p.colMenu.FindOne(context.TODO(), filter).Decode(&menu)
+	if err != nil {
+		logger.Error(err)
+		//panic(err)
 	}
 	fmt.Println("[model.ViewMenu menu] ", menu)
 

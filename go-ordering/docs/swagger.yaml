@@ -1,17 +1,19 @@
 definitions:
+  controller.Controller:
+    type: object
   model.Menu:
     properties:
       category:
-        description: 메뉴 카테고리
+        description: 메뉴 카테고리 Enums(한식, 일식, 중식)
         type: string
       countryOf:
-        description: 원산지
+        description: 원산지 Enums(한국, 일본, 중국)
         type: string
       isDisabled:
-        description: 판매여부
+        description: 판매여부 default(true)
         type: boolean
       maxCount:
-        description: 판매 가능 갯수
+        description: 판매 가능 갯수 mininum(1) maxinum(50)
         type: integer
       menuID:
         description: 메뉴 ID
@@ -20,7 +22,7 @@ definitions:
         description: 메뉴 이름
         type: string
       popularity:
-        description: 인기도
+        description: 인기도 mininum(1) maxinum(5)
         type: integer
       price:
         description: 가격
@@ -32,13 +34,13 @@ definitions:
         description: 판매자 이름
         type: string
       spicy:
-        description: 맵기
+        description: 맵기 Enums(아주매움, 매움, 보통, 순한맛)
         type: string
       status:
-        description: 주문 가능 상태 (주문가능, 오늘판매완료, 1개남음)
+        description: 주문 가능 상태 nums(준비중, 판매중)
         type: string
       todayMenu:
-        description: 오늘의 추천메뉴 여부
+        description: 오늘의 추천메뉴 여부 default(false)
         type: boolean
     type: object
   model.OrdererMenuLink:
@@ -56,10 +58,10 @@ definitions:
         description: 주문번호
         type: string
       orderStarGrade:
-        description: 평점
+        description: 평점 mininum(1) maxinum(5)
         type: integer
       orderStatus:
-        description: 주문상태 (주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
+        description: 주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
         type: string
       ordererAddress:
         description: 주문자 주소
@@ -81,62 +83,37 @@ info:
   version: "1.0"
 paths:
   /oos/order/changeOrder:
-    post:
+    put:
       consumes:
       - application/json
-      description: ChangeOrder 주문 변경 - 주문자 (수정/취소)
+      description: ChangeOrder 주문 변경 - 주문자 (주문변경 커멘드 Enums(주문추가, 주문취소, 정보변경))
       parameters:
-      - description: 주문변경 커멘드
-        enum:
-        - 주문추가
-        - 주문취소
-        - 정보변경
-        in: path
-        name: ChangeOrderCmd
+      - description: 오더
+        in: body
+        name: OrdererMenuLink
         required: true
-        type: string
-      - description: 주문번호
-        in: path
-        name: OrderNo
-        required: true
-        type: string
-      - description: 주문자 주소
-        in: path
-        name: OrdererAddress
-        type: string
-      - description: 주문자 폰번호
-        in: path
-        name: OrdererPhone
-        type: integer
+        schema:
+          $ref: '#/definitions/model.OrdererMenuLink'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.OrdererMenuLink'
+            $ref: '#/definitions/controller.Controller'
       summary: call ChangeOrder, return ok by json.
   /oos/order/createReview:
     post:
       consumes:
       - application/json
-      description: CreateReview 리뷰 등록 - 주문자
+      description: CreateReview 리뷰 등록 - 주문자 (주문번호 기준으로 등록)
       parameters:
-      - description: 주문번호
-        in: path
-        name: OrderNo
+      - description: 오더
+        in: body
+        name: OrdererMenuLink
         required: true
-        type: string
-      - description: 후기
-        in: path
-        name: OrderComment
-        required: true
-        type: string
-      - description: 평점
-        in: path
-        name: OrderStarGrade
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.OrdererMenuLink'
       produces:
       - application/json
       responses:
@@ -151,29 +128,12 @@ paths:
       - application/json
       description: NewOrder 주문 등록 - 주문자
       parameters:
-      - description: 메뉴 ID
-        in: path
-        name: MenuID
+      - description: 오더
+        in: body
+        name: OrdererMenuLink
         required: true
-        type: string
-      - description: 메뉴이름
-        in: path
-        name: MenuName
-        required: true
-        type: string
-      - description: 주문자 ID
-        in: path
-        name: OrdererID
-        required: true
-        type: string
-      - description: 주문자 주소
-        in: path
-        name: OrdererAddress
-        type: string
-      - description: 주문자 폰번호
-        in: path
-        name: OrdererPhone
-        type: integer
+        schema:
+          $ref: '#/definitions/model.OrdererMenuLink'
       produces:
       - application/json
       responses:
@@ -183,46 +143,46 @@ paths:
             $ref: '#/definitions/model.OrdererMenuLink'
       summary: call NewOrder, return ok by json.
   /oos/order/searchMenu:
-    post:
+    get:
       consumes:
       - application/json
       description: SearchMenu 메뉴 검색 - 주문자, 피주문자
       parameters:
+      - description: 판매자 ID
+        in: query
+        name: SellerID
+        type: string
       - description: 메뉴이름
-        in: path
+        in: query
         name: MenuName
-        required: true
         type: string
       - description: 가격
-        in: path
+        in: query
         name: Price
-        required: true
         type: integer
       - description: 원산지
         enum:
         - 한국
         - 일본
         - 중국
-        in: path
+        in: query
         name: CountryOf
-        required: true
         type: string
       - description: 메뉴 카테고리
         enum:
         - 한식
         - 일식
         - 중식
-        in: path
+        in: query
         name: Category
-        required: true
         type: string
       - description: 주문 가능 상태
         enum:
         - 준비중
         - 판매중
-        in: path
+        - 판매완료
+        in: query
         name: Status
-        required: true
         type: string
       - description: 맵기
         enum:
@@ -230,12 +190,11 @@ paths:
         - 매움
         - 보통
         - 순한맛
-        in: path
+        in: query
         name: Spicy
-        required: true
         type: string
       - description: 오늘의 추천메뉴 여부
-        in: path
+        in: query
         name: TodayMenu
         type: boolean
       produces:
@@ -244,32 +203,32 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Menu'
-            type: array
+            $ref: '#/definitions/controller.Controller'
       summary: call SearchMenu, return ok by json.
   /oos/order/searchOrder:
-    post:
+    get:
       consumes:
       - application/json
       description: SearchOrder 주문 내역 조회 기능 - 주문자
       parameters:
       - description: 주문자 ID
-        in: path
+        in: query
         name: OrdererID
         required: true
         type: string
       - description: 메뉴이름
-        in: path
+        in: query
         name: MenuName
-        required: true
         type: string
       - description: 주문 상태
         enum:
-        - 주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소
-        in: path
+        - 주문확인중
+        - 조리중
+        - 배달중
+        - 배달완료
+        - 주문취소
+        in: query
         name: OrderStatus
-        required: true
         type: string
       produces:
       - application/json
@@ -277,20 +236,57 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.OrdererMenuLink'
-            type: array
+            $ref: '#/definitions/controller.Controller'
       summary: call SearchOrder, return ok by json.
   /oos/order/searchTodayMenu:
-    post:
+    get:
       consumes:
       - application/json
       description: SearchTodayMenu 오늘의 추천메뉴 리스트
       parameters:
       - description: 판매자 ID
-        in: path
+        in: query
         name: SellerID
-        required: true
+        type: string
+      - description: 메뉴이름
+        in: query
+        name: MenuName
+        type: string
+      - description: 가격
+        in: query
+        name: Price
+        type: integer
+      - description: 원산지
+        enum:
+        - 한국
+        - 일본
+        - 중국
+        in: query
+        name: CountryOf
+        type: string
+      - description: 메뉴 카테고리
+        enum:
+        - 한식
+        - 일식
+        - 중식
+        in: query
+        name: Category
+        type: string
+      - description: 주문 가능 상태
+        enum:
+        - 준비중
+        - 판매중
+        in: query
+        name: Status
+        type: string
+      - description: 맵기
+        enum:
+        - 아주매움
+        - 매움
+        - 보통
+        - 순한맛
+        in: query
+        name: Spicy
         type: string
       produces:
       - application/json
@@ -298,18 +294,16 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Menu'
-            type: array
+            $ref: '#/definitions/controller.Controller'
       summary: call SearchTodayMenu, return ok by json.
   /oos/order/viewMenu:
-    post:
+    get:
       consumes:
       - application/json
       description: ViewMenu 메뉴 상세 - 주문자, 피주문자
       parameters:
       - description: 메뉴 ID
-        in: path
+        in: query
         name: MenuID
         required: true
         type: string
@@ -322,13 +316,13 @@ paths:
             $ref: '#/definitions/model.Menu'
       summary: call ViewMenu, return ok by json.
   /oos/order/viewOrder:
-    post:
+    get:
       consumes:
       - application/json
       description: ViewOrder 주문 상세 - 주문자, 피주문자
       parameters:
       - description: 주문번호
-        in: path
+        in: query
         name: OrderNo
         required: true
         type: string
@@ -338,114 +332,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.OrdererMenuLink'
+            $ref: '#/definitions/controller.Controller'
       summary: call ViewOrder, return ok by json.
-  /oos/seller/OrderStatus:
-    post:
-      consumes:
-      - application/json
-      description: OrderStatus 주문 내역 조회 - 피주문자
-      parameters:
-      - description: 판매자 ID
-        in: path
-        name: SellerID
-        required: true
-        type: string
-      - description: 주문 상태
-        enum:
-        - 주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소
-        in: path
-        name: OrderStatus
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.OrdererMenuLink'
-            type: array
-      summary: call OrderStatus, return ok by json.
   /oos/seller/createMenu:
     post:
       consumes:
       - application/json
       description: CreateMenu 메뉴 등록 - 피주문자
       parameters:
-      - description: 판매자 ID
-        in: path
-        name: SellerID
+      - description: 메뉴
+        in: body
+        name: Menu
         required: true
-        type: string
-      - description: 판매자 이름
-        in: path
-        name: SellerName
-        required: true
-        type: string
-      - description: 메뉴이름
-        in: path
-        name: MenuName
-        required: true
-        type: string
-      - description: 주문 가능 상태
-        enum:
-        - 준비중
-        - 판매중
-        in: path
-        name: Status
-        required: true
-        type: string
-      - description: 판매 가능 갯수
-        in: path
-        name: MaxCount
-        required: true
-        type: integer
-      - description: 원산지
-        enum:
-        - 한국
-        - 일본
-        - 중국
-        in: path
-        name: CountryOf
-        required: true
-        type: string
-      - description: 가격
-        in: path
-        name: Price
-        required: true
-        type: integer
-      - description: 맵기
-        enum:
-        - 아주매움
-        - 매움
-        - 보통
-        - 순한맛
-        in: path
-        name: Spicy
-        required: true
-        type: string
-      - default: true
-        description: 판매여부
-        in: path
-        name: IsDisabled
-        required: true
-        type: boolean
-      - default: false
-        description: 오늘의 추천메뉴 여부
-        in: path
-        name: TodayMenu
-        type: boolean
-      - description: 메뉴 카테고리
-        enum:
-        - 한식
-        - 일식
-        - 중식
-        in: path
-        name: Category
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.Menu'
       produces:
       - application/json
       responses:
@@ -458,18 +358,14 @@ paths:
     put:
       consumes:
       - application/json
-      description: DeleteMenu 메뉴 삭제 - 피주문자
+      description: DeleteMenu 메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
       parameters:
-      - description: 메뉴 ID
-        in: path
-        name: MenuID
+      - description: 메뉴
+        in: body
+        name: Menu
         required: true
-        type: string
-      - description: 판매여부
-        in: path
-        name: IsDisabled
-        required: true
-        type: boolean
+        schema:
+          $ref: '#/definitions/model.Menu'
       produces:
       - application/json
       responses:
@@ -478,22 +374,47 @@ paths:
           schema:
             $ref: '#/definitions/model.Menu'
       summary: call DeleteMenu, return ok by json.
-  /oos/seller/setTodayMenu:
-    post:
+  /oos/seller/orderStatus:
+    get:
       consumes:
       - application/json
-      description: SetTodayMenu 오늘의 추천메뉴 여부 - 설정 변경
+      description: OrderStatus 주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)
       parameters:
-      - description: 메뉴 ID
-        in: path
-        name: MenuID
+      - description: 판매자 ID
+        in: query
+        name: SellerID
         required: true
         type: string
-      - description: 오늘의 추천메뉴 여부
-        in: path
-        name: TodayMenu
+      - description: 주문 상태
+        enum:
+        - 주문확인중
+        - 조리중
+        - 배달중
+        - 배달완료
+        - 주문취소
+        in: query
+        name: OrderStatus
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call OrderStatus, return ok by json.
+  /oos/seller/setTodayMenu:
+    put:
+      consumes:
+      - application/json
+      description: SetTodayMenu 오늘의 추천메뉴 여부 - 설정 변경 (메뉴ID를 기준으로 메뉴 업데이트)
+      parameters:
+      - description: 메뉴
+        in: body
+        name: Menu
         required: true
-        type: boolean
+        schema:
+          $ref: '#/definitions/model.Menu'
       produces:
       - application/json
       responses:
@@ -506,85 +427,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: UpdateMenu 메뉴 수정 - 피주문자 (판매자ID와 메뉴ID를 기준으로 메뉴 업데이트)
+      description: UpdateMenu 메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
       parameters:
-      - description: 메뉴 ID
-        in: path
-        name: MenuID
+      - description: 메뉴
+        in: body
+        name: Menu
         required: true
-        type: string
-      - description: 판매자 ID
-        in: path
-        name: SellerID
-        required: true
-        type: string
-      - description: 판매자 이름
-        in: path
-        name: SellerName
-        required: true
-        type: string
-      - description: 메뉴이름
-        in: path
-        name: MenuName
-        required: true
-        type: string
-      - description: 주문 가능 상태
-        enum:
-        - 준비중
-        - 판매중
-        in: path
-        name: Status
-        required: true
-        type: string
-      - description: 판매 가능 갯수
-        in: path
-        name: MaxCount
-        required: true
-        type: integer
-      - description: 원산지
-        enum:
-        - 한국
-        - 일본
-        - 중국
-        in: path
-        name: CountryOf
-        required: true
-        type: string
-      - description: 가격
-        in: path
-        name: Price
-        required: true
-        type: integer
-      - description: 맵기
-        enum:
-        - 아주매움
-        - 매움
-        - 보통
-        - 순한맛
-        in: path
-        name: Spicy
-        required: true
-        type: string
-      - default: true
-        description: 판매여부
-        in: path
-        name: IsDisabled
-        required: true
-        type: boolean
-      - default: false
-        description: 오늘의 추천메뉴 여부
-        in: path
-        name: TodayMenu
-        type: boolean
-      - description: 메뉴 카테고리
-        enum:
-        - 한식
-        - 일식
-        - 중식
-        in: path
-        name: Category
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.Menu'
       produces:
       - application/json
       responses:

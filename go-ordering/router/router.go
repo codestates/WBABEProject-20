@@ -28,7 +28,7 @@ func NewRouter(ctl *ctl.Controller) (*Router, error) {
 func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("router.CORS c : ", c)
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*") //http://localhost:8080
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		//허용할 header 타입에 대해 열거
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, X-Forwarded-For, Authorization, accept, origin, Cache-Control, X-Requested-With")
@@ -63,9 +63,10 @@ func liteAuth() gin.HandlerFunc {
 func (p *Router) Idx() *gin.Engine {
 
 	// 컨피그나 상황에 맞게 gin 모드 설정
-	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.ReleaseMode)
 
-	r := gin.Default() //gin 선언
+	//r := gin.Default() //gin 선언
+	r := gin.Default()
 
 	// 기존의 logger, recovery 대신 logger에서 선언한 미들웨어 사용
 	//r.Use(gin.Logger())   //gin 내부 log, logger 미들웨어 사용 선언
@@ -78,7 +79,10 @@ func (p *Router) Idx() *gin.Engine {
 	logger.Info("[router Idx] start server...")
 
 	r.GET("/swagger/:any", ginSwg.WrapHandler(swgFiles.Handler))
-	docs.SwaggerInfo.Host = "localhost" //swagger 정보 등록
+	//r.POST("/swagger/:any", ginSwg.WrapHandler(swgFiles.Handler))
+	//r.PUT("/swagger/:any", ginSwg.WrapHandler(swgFiles.Handler))
+
+	docs.SwaggerInfo.Host = "localhost:8080" //swagger 정보 등록
 
 	//피주문자 그룹
 	seller := r.Group("oos/seller", liteAuth())
@@ -86,14 +90,10 @@ func (p *Router) Idx() *gin.Engine {
 		seller.POST("/createMenu", p.ct.CreateMenu)
 		seller.POST("/updateMenu", p.ct.UpdateMenu)
 		seller.PUT("/deleteMenu", p.ct.DeleteMenu)
+		seller.GET("/searchMenu", p.ct.SearchMenu)
 
-		seller.POST("/searchMenu", p.ct.SearchMenu)
-		seller.POST("/orderStatus", p.ct.OrderStatus)
-
-		seller.POST("/viewMenu", p.ct.ViewMenu)
-
+		seller.GET("/orderStatus", p.ct.OrderStatus)
 		seller.POST("/setTodayMenu", p.ct.SetTodayMenu)
-		seller.POST("/searchTodayMenu", p.ct.SearchTodayMenu)
 
 	}
 
@@ -101,17 +101,15 @@ func (p *Router) Idx() *gin.Engine {
 	order := r.Group("oos/order", liteAuth())
 	{
 
-		order.POST("/searchMenu", p.ct.SearchMenu)
-		order.POST("/viewMenu", p.ct.ViewMenu)
+		order.GET("/viewMenu", p.ct.ViewMenu)
 
 		order.POST("/newOrder", p.ct.NewOrder)
-		order.POST("/changeOrder", p.ct.ChangeOrder)
-		order.POST("/searchOrder", p.ct.SearchOrder)
-		order.POST("/viewOrder", p.ct.ViewOrder)
+		order.PUT("/changeOrder", p.ct.ChangeOrder)
+		order.GET("/searchOrder", p.ct.SearchOrder)
+		order.GET("/viewOrder", p.ct.ViewOrder)
 
 		order.POST("/createReview", p.ct.CreateReview)
-
-		order.POST("/searchTodayMenu", p.ct.SearchTodayMenu)
+		order.GET("/searchTodayMenu", p.ct.SearchTodayMenu)
 
 	}
 

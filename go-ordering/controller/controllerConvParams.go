@@ -10,6 +10,144 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// @Description 메뉴 등록시 판매자 ID 체크 (로그인 여부)
+func checkCreateMenu(param model.Menu) (bool, string) {
+	logger.Info("[controllerConvParams checkCreateMenu] SellerID : ", param.SellerID)
+	logger.Info("[controllerConvParams checkCreateMenu] MenuName : ", param.MenuName)
+	errChk := false
+	errMsg := ""
+
+	//메뉴 등록시 판매자 로그인 필수.
+	if param.SellerID == "" {
+		errMsg = "로그인해주세요. (판매자 ID (SellerID)는 필수 입니다.)"
+		errChk = true
+	}
+	if param.MenuName == "" {
+		errMsg = "메뉴 이름은 필수 입니다.)"
+		errChk = true
+	}
+
+	return errChk, errMsg
+}
+
+// @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
+func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
+
+	var params model.Menu
+	if err := c.ShouldBind(&params); err == nil {
+
+		if c.Query("MenuID") != "" {
+			filter = append(filter, bson.E{"menuID", params.MenuID})
+		}
+		if c.Query("SellerID") != "" {
+			filter = append(filter, bson.E{"sellerID", params.SellerID})
+		}
+		if c.Query("SellerName") != "" {
+			filter = append(filter, bson.E{"sellerName", params.SellerName})
+		}
+		if c.Query("MenuName") != "" {
+			filter = append(filter, bson.E{"menuName", params.MenuName})
+		}
+		if c.Query("Status") != "" {
+			filter = append(filter, bson.E{"status", params.Status})
+		}
+		if c.Query("MaxCount") != "" {
+			filter = append(filter, bson.E{"maxCount", params.MaxCount})
+		}
+		if c.Query("CountryOf") != "" {
+			filter = append(filter, bson.E{"countryOf", params.CountryOf})
+		}
+		if c.Query("Price") != "" {
+			filter = append(filter, bson.E{"price", params.Price})
+
+		}
+		if c.Query("Spicy") != "" {
+			filter = append(filter, bson.E{"spicy", params.Spicy})
+		}
+		if c.Query("Popularity") != "" {
+			filter = append(filter, bson.E{"popularity", params.Popularity})
+
+		}
+		if c.Query("IsDisabled") != "" {
+			filter = append(filter, bson.E{"isDisabled", params.IsDisabled})
+
+		}
+		if c.Query("TodayMenu") != "" {
+			filter = append(filter, bson.E{"todayMenu", params.TodayMenu})
+
+		}
+		if c.Query("Category") != "" {
+			filter = append(filter, bson.E{"category", params.Category})
+		}
+	} else {
+		logger.Error(err)
+	}
+
+	fmt.Println("[SearchMenuAppendQuery] params : ", params)
+	fmt.Println("[SearchMenuAppendQuery] filter : ", filter)
+
+	return params, filter
+}
+
+// @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
+func UpdateMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
+
+	filter := bson.M{
+		"$set": bson.M{}}
+	var params model.Menu
+	if err := c.ShouldBind(&params); err == nil {
+
+		//ID는 업데이트 하지 않음
+		// if c.PostForm("MenuID") != "" {
+		// 	filter["$set"].(bson.M)["menuID"] = params.MenuID
+		// }
+		// if c.PostForm("SellerID") != "" {
+		// 	filter["$set"].(bson.M)["sellerID"] = params.SellerID
+		// }
+		if params.SellerName != "" {
+			filter["$set"].(bson.M)["sellerName"] = params.SellerName
+		}
+		if params.MenuName != "" {
+			filter["$set"].(bson.M)["menuName"] = params.MenuName
+		}
+		if params.Status != "" {
+			filter["$set"].(bson.M)["status"] = params.Status
+		}
+		if params.MaxCount > 0 {
+			filter["$set"].(bson.M)["maxCount"] = params.MaxCount
+		}
+		if params.CountryOf != "" {
+			filter["$set"].(bson.M)["countryOf"] = params.CountryOf
+		}
+		if params.Price > 0 {
+			filter["$set"].(bson.M)["price"] = params.Price
+
+		}
+		if params.Spicy != "" {
+			filter["$set"].(bson.M)["spicy"] = params.Spicy
+		}
+		if params.Popularity > 0 {
+			filter["$set"].(bson.M)["popularity"] = params.Popularity
+
+		}
+		//별도 업데이트
+		// if params.IsDisabled != "" {
+		// 	filter["$set"].(bson.M)["isDisabled"] = params.IsDisabled
+
+		// }
+		// if params.TodayMenu != "" {
+		// 	filter["$set"].(bson.M)["todayMenu"] = params.TodayMenu
+
+		// }
+		if params.Category != "" {
+			filter["$set"].(bson.M)["category"] = params.Category
+		}
+	} else {
+		logger.Error(err)
+	}
+	return params, filter
+}
+
 // @Description Menu 구조체 파라메터 매핑
 func setParamMenu(c *gin.Context) model.Menu {
 
@@ -107,134 +245,6 @@ func setParamOrdererMenuLink(c *gin.Context) model.OrdererMenuLink {
 		}
 	}
 	return params
-}
-
-// @Description 메뉴 등록시 판매자 ID 체크 (로그인 여부)
-func checkCreateMenu(c *gin.Context) (bool, string) {
-
-	var errChk = false
-	var errMsg = ""
-
-	//메뉴 등록시 판매자 로그인 필수.
-	if c.PostForm("SellerID") == "" {
-		errMsg = "로그인해주세요. (판매자 ID (SellerID)는 필수 입니다.)"
-		errChk = true
-	}
-
-	return errChk, errMsg
-}
-
-// @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
-func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
-
-	var params model.Menu
-	if err := c.ShouldBind(&params); err == nil {
-
-		if c.PostForm("MenuID") != "" {
-			filter = append(filter, bson.E{"menuID", params.MenuID})
-		}
-		if c.PostForm("SellerID") != "" {
-			filter = append(filter, bson.E{"sellerID", params.SellerID})
-		}
-		if c.PostForm("SellerName") != "" {
-			filter = append(filter, bson.E{"sellerName", params.SellerName})
-		}
-		if c.PostForm("MenuName") != "" {
-			filter = append(filter, bson.E{"menuName", params.MenuName})
-		}
-		if c.PostForm("Status") != "" {
-			filter = append(filter, bson.E{"status", params.Status})
-		}
-		if c.PostForm("MaxCount") != "" {
-			filter = append(filter, bson.E{"maxCount", params.MaxCount})
-		}
-		if c.PostForm("CountryOf") != "" {
-			filter = append(filter, bson.E{"countryOf", params.CountryOf})
-		}
-		if c.PostForm("Price") != "" {
-			filter = append(filter, bson.E{"price", params.Price})
-
-		}
-		if c.PostForm("Spicy") != "" {
-			filter = append(filter, bson.E{"spicy", params.Spicy})
-		}
-		if c.PostForm("Popularity") != "" {
-			filter = append(filter, bson.E{"popularity", params.Popularity})
-
-		}
-		if c.PostForm("IsDisabled") != "" {
-			filter = append(filter, bson.E{"isDisabled", params.IsDisabled})
-
-		}
-		if c.PostForm("TodayMenu") != "" {
-			filter = append(filter, bson.E{"todayMenu", params.TodayMenu})
-
-		}
-		if c.PostForm("Category") != "" {
-			filter = append(filter, bson.E{"category", params.Category})
-		}
-	} else {
-		logger.Error(err)
-	}
-	return params, filter
-}
-
-// @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
-func UpdateMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
-
-	filter := bson.M{
-		"$set": bson.M{}}
-	var params model.Menu
-	if err := c.ShouldBind(&params); err == nil {
-
-		//ID는 업데이트 하지 않음
-		// if c.PostForm("MenuID") != "" {
-		// 	filter["$set"].(bson.M)["menuID"] = params.MenuID
-		// }
-		// if c.PostForm("SellerID") != "" {
-		// 	filter["$set"].(bson.M)["sellerID"] = params.SellerID
-		// }
-		if c.PostForm("SellerName") != "" {
-			filter["$set"].(bson.M)["sellerName"] = params.SellerName
-		}
-		if c.PostForm("MenuName") != "" {
-			filter["$set"].(bson.M)["menuName"] = params.MenuName
-		}
-		if c.PostForm("Status") != "" {
-			filter["$set"].(bson.M)["status"] = params.Status
-		}
-		if c.PostForm("MaxCount") != "" {
-			filter["$set"].(bson.M)["maxCount"] = params.MaxCount
-		}
-		if c.PostForm("CountryOf") != "" {
-			filter["$set"].(bson.M)["countryOf"] = params.CountryOf
-		}
-		if c.PostForm("Price") != "" {
-			filter["$set"].(bson.M)["price"] = params.Price
-
-		}
-		if c.PostForm("Spicy") != "" {
-			filter["$set"].(bson.M)["spicy"] = params.Spicy
-		}
-		if c.PostForm("Popularity") != "" {
-			filter["$set"].(bson.M)["popularity"] = params.Popularity
-
-		}
-		if c.PostForm("IsDisabled") != "" {
-			filter["$set"].(bson.M)["isDisabled"] = params.IsDisabled
-
-		}
-		if c.PostForm("TodayMenu") != "" {
-			filter["$set"].(bson.M)["todayMenu"] = params.TodayMenu
-
-		}
-		if c.PostForm("Category") != "" {
-			filter["$set"].(bson.M)["category"] = params.Category
-		}
-	} else {
-		logger.Error(err)
-	}
-	return params, filter
 }
 
 // // @Description Seller 구조체 파라메터 매핑
