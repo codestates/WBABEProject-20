@@ -60,6 +60,10 @@ func (p *Model) CreateMenu(menu Menu) Menu {
 func (p *Model) UpdateMenu(menu Menu, updateFilter bson.M) Menu {
 	fmt.Println("[model.UpdateMenu Param] ", menu)
 
+	/* 
+	업데이트 시에는 MenuId를 request body로 받는 것이 아니라 URI로서 값을 받아와 이용하는 것이 일반적입니다.
+	e.g PATCH /menu/1(메뉴아이디 값)
+	*/
 	//메뉴ID 기준으로 메뉴 업데이트
 	filter := bson.D{{"menuID", menu.MenuID}}
 

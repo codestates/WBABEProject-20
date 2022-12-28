@@ -115,6 +115,13 @@ func checkCreateMenu(c *gin.Context) (bool, string) {
 	var errChk = false
 	var errMsg = ""
 
+	/*
+	판매자 아이디를 체크한다고 되어있는데, 로직을 살펴보면 빈 스트링 값만 아니면 에러가 발생하지 않고 통과되네요.
+	예를들면 SellerId 값으로 'GSODEIGNIOGNRO' 같은 값을 넣어도 판매자라고 인식을 하게 되네요.
+	권한 관리의 경우 미들웨어를 통해서 유저의 타입이 판매자인지, 구매자인지를 체크하는 로직들로 제어를 하는 것이 올바르다고 생각합니다.
+	
+	gin 권한관리, permission middleware와 같은 키워드로 검색해보시기 바랍니다.
+	*/
 	//메뉴 등록시 판매자 로그인 필수.
 	if c.PostForm("SellerID") == "" {
 		errMsg = "로그인해주세요. (판매자 ID (SellerID)는 필수 입니다.)"
@@ -181,6 +188,17 @@ func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
 
 // @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
 func UpdateMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
+	/*
+	1. Validator를 통해 Input 값을 제어하시면 좋을 것 같습니다.
+		min, max 값 혹은 들어오는 데이터에 대해서 검증하려면 Gin에서 제공하는 validtor 기능을 이용하시면 좋을 것 같습니다.
+		지금의 구조 같은 경우 판매 가능 갯수가 1~50이지만 그 외의 숫자가 들어와도 모두 가능하도록 되어 있습니다.
+		
+		아래의 링크를 참고해보시기 바랍니다.
+		https://gin-gonic.com/docs/examples/custom-validators/
+
+	2. 카테고리의 경우 보통은 0개 ~ 2개 이상의 값을 지닙니다.
+		해당 구조에서 여러 카테고리에 속하는 경우는 어떻게 입력받을 수 있나요? 이 부분에 대한 고려가 필요해 보입니다.
+	*/
 
 	filter := bson.M{
 		"$set": bson.M{}}

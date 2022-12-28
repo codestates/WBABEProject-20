@@ -1,5 +1,9 @@
 package model
 
+/*
+필요 없는 파일인가요? 그러면 제거하는 것이 좋아보입니다.
+/*
+
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 // type BodyMenu struct {

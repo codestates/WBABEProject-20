@@ -1,5 +1,11 @@
 package model
 
+/*
+구현이 되어 있지는 않은 부분이지만 코멘트 드립니다.
+보통은 주문자와 피 주문자를 다른 것으로 나누는 것 보다는
+유저라는 구조에서 판매자인지, 구매자인지를 필드를 통해 구분합니다. 현재의 구조에서는 중복된 필드들이 많이 존재하니까요.
+*/
+
 // 지금은 화면 처리 안되기 때문에 ID 없음. 구현 안함.
 // type Orderer struct {
 // 	OrdererID  string `bson:"ordererID"`  //주문자 ID
@@ -33,7 +39,16 @@ type Menu struct {
 	Price      int    `bson:"price"`      //가격
 	Spicy      string `bson:"spicy"`      //맵기 Enums(아주매움, 매움, 보통, 순한맛)
 	Popularity int    `bson:"popularity"` //인기도
+	/*
+	bool 값들의 경우는 네이밍시에 일반적으로 긍정의 단어를 사용하고, 그 여부는 true, false로 제어합니다.
+	즉, 추천드리는 네이밍은 IsAvailable, IsPublic, ForSale 이 되겠습니다.
+	disable이라는 부정의 의미보다는 긍정의 의미로 네이밍을 짓고 변수 값으로 여부를 판단하는 것이 더 읽기에 자연스럽습니다.
+	*/
 	IsDisabled bool   `bson:"isDisabled"` //판매여부 default(true)
+	/*
+	TodayMenu만 보고서는 bool 값인지 유추하기가 힘들어 보입니다. 현재는 오늘의 메뉴가 무엇인지 하는 String 데이터가 예상이 됩니다.
+	따라서 IsRecommeded, IsTdoayMenu 과 같은 네이밍이 적절해 보입니다.
+	*/
 	TodayMenu  bool   `bson:"todayMenu"`  //오늘의 추천메뉴 여부 default(false)
 	Category   string `bson:"category"`   //메뉴 카테고리 Enums(한식, 일식, 중식)
 }
