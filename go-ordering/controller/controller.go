@@ -114,7 +114,7 @@ func (p *Controller) DeleteMenu(c *gin.Context) {
 // @Param Status query  string false "주문 가능 상태" Enums(준비중, 판매중, 판매완료)
 // @Param Spicy query  string false "맵기" Enums(아주매움, 매움, 보통, 순한맛)
 // @Param TodayMenu query  bool false "오늘의 추천메뉴 여부"
-// @Router /oos/order/searchMenu [get]
+// @Router /oos/seller/searchMenu [get]
 // @Success 200 {object} Controller
 func (p *Controller) SearchMenu(c *gin.Context) {
 	logger.Info("[controller.SearchMenu] start...")

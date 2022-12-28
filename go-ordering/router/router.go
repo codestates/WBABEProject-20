@@ -93,7 +93,7 @@ func (p *Router) Idx() *gin.Engine {
 		seller.GET("/searchMenu", p.ct.SearchMenu)
 
 		seller.GET("/orderStatus", p.ct.OrderStatus)
-		seller.POST("/setTodayMenu", p.ct.SetTodayMenu)
+		seller.PUT("/setTodayMenu", p.ct.SetTodayMenu)
 
 	}
 

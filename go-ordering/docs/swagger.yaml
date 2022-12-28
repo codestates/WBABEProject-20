@@ -142,69 +142,6 @@ paths:
           schema:
             $ref: '#/definitions/model.OrdererMenuLink'
       summary: call NewOrder, return ok by json.
-  /oos/order/searchMenu:
-    get:
-      consumes:
-      - application/json
-      description: SearchMenu 메뉴 검색 - 주문자, 피주문자
-      parameters:
-      - description: 판매자 ID
-        in: query
-        name: SellerID
-        type: string
-      - description: 메뉴이름
-        in: query
-        name: MenuName
-        type: string
-      - description: 가격
-        in: query
-        name: Price
-        type: integer
-      - description: 원산지
-        enum:
-        - 한국
-        - 일본
-        - 중국
-        in: query
-        name: CountryOf
-        type: string
-      - description: 메뉴 카테고리
-        enum:
-        - 한식
-        - 일식
-        - 중식
-        in: query
-        name: Category
-        type: string
-      - description: 주문 가능 상태
-        enum:
-        - 준비중
-        - 판매중
-        - 판매완료
-        in: query
-        name: Status
-        type: string
-      - description: 맵기
-        enum:
-        - 아주매움
-        - 매움
-        - 보통
-        - 순한맛
-        in: query
-        name: Spicy
-        type: string
-      - description: 오늘의 추천메뉴 여부
-        in: query
-        name: TodayMenu
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controller.Controller'
-      summary: call SearchMenu, return ok by json.
   /oos/order/searchOrder:
     get:
       consumes:
@@ -403,6 +340,69 @@ paths:
           schema:
             $ref: '#/definitions/controller.Controller'
       summary: call OrderStatus, return ok by json.
+  /oos/seller/searchMenu:
+    get:
+      consumes:
+      - application/json
+      description: SearchMenu 메뉴 검색 - 주문자, 피주문자
+      parameters:
+      - description: 판매자 ID
+        in: query
+        name: SellerID
+        type: string
+      - description: 메뉴이름
+        in: query
+        name: MenuName
+        type: string
+      - description: 가격
+        in: query
+        name: Price
+        type: integer
+      - description: 원산지
+        enum:
+        - 한국
+        - 일본
+        - 중국
+        in: query
+        name: CountryOf
+        type: string
+      - description: 메뉴 카테고리
+        enum:
+        - 한식
+        - 일식
+        - 중식
+        in: query
+        name: Category
+        type: string
+      - description: 주문 가능 상태
+        enum:
+        - 준비중
+        - 판매중
+        - 판매완료
+        in: query
+        name: Status
+        type: string
+      - description: 맵기
+        enum:
+        - 아주매움
+        - 매움
+        - 보통
+        - 순한맛
+        in: query
+        name: Spicy
+        type: string
+      - description: 오늘의 추천메뉴 여부
+        in: query
+        name: TodayMenu
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Controller'
+      summary: call SearchMenu, return ok by json.
   /oos/seller/setTodayMenu:
     put:
       consumes:

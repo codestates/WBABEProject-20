@@ -109,97 +109,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/oos/order/searchMenu": {
-            "get": {
-                "description": "SearchMenu 메뉴 검색 - 주문자, 피주문자",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "call SearchMenu, return ok by json.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "판매자 ID",
-                        "name": "SellerID",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "메뉴이름",
-                        "name": "MenuName",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "가격",
-                        "name": "Price",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "한국",
-                            "일본",
-                            "중국"
-                        ],
-                        "type": "string",
-                        "description": "원산지",
-                        "name": "CountryOf",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "한식",
-                            "일식",
-                            "중식"
-                        ],
-                        "type": "string",
-                        "description": "메뉴 카테고리",
-                        "name": "Category",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "준비중",
-                            "판매중",
-                            "판매완료"
-                        ],
-                        "type": "string",
-                        "description": "주문 가능 상태",
-                        "name": "Status",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "아주매움",
-                            "매움",
-                            "보통",
-                            "순한맛"
-                        ],
-                        "type": "string",
-                        "description": "맵기",
-                        "name": "Spicy",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "오늘의 추천메뉴 여부",
-                        "name": "TodayMenu",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.Controller"
-                        }
-                    }
-                }
-            }
-        },
         "/oos/order/searchOrder": {
             "get": {
                 "description": "SearchOrder 주문 내역 조회 기능 - 주문자",
@@ -481,6 +390,97 @@ const docTemplate = `{
                         "type": "string",
                         "description": "주문 상태",
                         "name": "OrderStatus",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.Controller"
+                        }
+                    }
+                }
+            }
+        },
+        "/oos/seller/searchMenu": {
+            "get": {
+                "description": "SearchMenu 메뉴 검색 - 주문자, 피주문자",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "call SearchMenu, return ok by json.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "판매자 ID",
+                        "name": "SellerID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "메뉴이름",
+                        "name": "MenuName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "가격",
+                        "name": "Price",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "한국",
+                            "일본",
+                            "중국"
+                        ],
+                        "type": "string",
+                        "description": "원산지",
+                        "name": "CountryOf",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "한식",
+                            "일식",
+                            "중식"
+                        ],
+                        "type": "string",
+                        "description": "메뉴 카테고리",
+                        "name": "Category",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "준비중",
+                            "판매중",
+                            "판매완료"
+                        ],
+                        "type": "string",
+                        "description": "주문 가능 상태",
+                        "name": "Status",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "아주매움",
+                            "매움",
+                            "보통",
+                            "순한맛"
+                        ],
+                        "type": "string",
+                        "description": "맵기",
+                        "name": "Spicy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "오늘의 추천메뉴 여부",
+                        "name": "TodayMenu",
                         "in": "query"
                     }
                 ],
