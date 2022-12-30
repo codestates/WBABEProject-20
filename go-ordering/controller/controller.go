@@ -4,9 +4,11 @@ package controller
 import (
 	"WBABEProject-20/go-ordering/logger"
 	"WBABEProject-20/go-ordering/model"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Controller struct {
@@ -24,72 +26,77 @@ func NewCTL(rep *model.Model) (*Controller, error) {
 // @name CreateMenu
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param Price path int true "가격"
-// @Param CountryOf path string true "원산지" Enums(한국, 일본, 중국)
-// @Param Category path string true "메뉴 카테고리" Enums(한식, 일식, 중식)
-// @Param Status path string true "주문 가능 상태" Enums(준비중, 판매중)
-// @Param MaxCount path int true "판매 가능 갯수" mininum(1) maxinum(50)
-// @Param Spicy path string true "맵기" Enums(아주매움, 매움, 보통, 순한맛)
-// @Param IsDisabled path bool true "판매여부" default(true)
-// @Param TodayMenu path bool false "오늘의 추천메뉴 여부" default(false)
+// @Param	Menu	body	model.Menu	true	"메뉴"
 // @Router /oos/seller/createMenu [post]
-// @Success 200 {object} Menu
+// @Success 200 {object} model.Menu
 func (p *Controller) CreateMenu(c *gin.Context) {
 	logger.Info("[controller.CreateMenu] start...")
 
 	var params model.Menu
 	if err := c.ShouldBind(&params); err == nil {
-		c.JSON(http.StatusOK, p.md.CreateMenu(params))
+
+		//메뉴 등록시 판매자 로그인 필수.
+		errChk, errMsg := checkCreateMenu(params)
+		if errChk {
+			logger.Error(errMsg)
+			c.JSON(http.StatusBadRequest, errMsg)
+			return
+		}
+
+		filter := bson.D{{"sellerID", params.SellerID}, {"menuName", params.MenuName}}
+		menus := p.md.SearchMenu(filter)
+		for _, menu := range menus {
+			logger.Info("[controller.CreateMenu] MenuName...", menu.MenuName)
+			errMsg = "같은 이름의 메뉴가 존재합니다. 수정해주세요."
+			logger.Error(errMsg)
+			c.JSON(http.StatusBadRequest, errMsg)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"등록되었습니다.": p.md.CreateMenu(params)})
+
 	} else {
 		logger.Error(err)
-		c.JSON(http.StatusBadRequest, "ERROR")
+		c.JSON(http.StatusBadRequest, "등록에 실패했습니다.")
 	}
 }
 
 // UpdateMenu godoc
 // @Summary call UpdateMenu, return ok by json.
-// @Description UpdateMenu 메뉴 수정 - 피주문자
+// @Description UpdateMenu 메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
 // @name UpdateMenu
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param Price path int true "가격"
-// @Param CountryOf path string true "원산지" Enums(한국, 일본, 중국)
-// @Param Category path string true "메뉴 카테고리" Enums(한식, 일식, 중식)
-// @Param Status path string true "주문 가능 상태" Enums(준비중, 판매중)
-// @Param MaxCount path int true "판매 가능 갯수" mininum(1) maxinum(50)
-// @Param Spicy path string true "맵기" Enums(아주매움, 매움, 보통, 순한맛)
-// @Param IsDisabled path bool true "판매여부"
-// @Param TodayMenu path bool false "오늘의 추천메뉴 여부"
+// @Param Menu		body	model.Menu	true	"메뉴"
 // @Router /oos/seller/updateMenu [post]
-// @Success 200 {object} Menu
+// @Success 200 {object} model.Menu
 func (p *Controller) UpdateMenu(c *gin.Context) {
 	logger.Info("[controller.UpdateMenu] start...")
 
-	params := setParamMenu(c)
-	c.JSON(http.StatusOK, p.md.UpdateMenu(params))
+	menu, updateFilter := UpdateMenuAppendQuery(c)
 
+	fmt.Println("[controller.UpdateMenu] menu...", menu)
+	fmt.Println("[controller.UpdateMenu] updateFilter...", updateFilter)
+
+	c.JSON(http.StatusOK, p.md.UpdateMenu(menu, updateFilter))
 }
 
 // DeleteMenu godoc
 // @Summary call DeleteMenu, return ok by json.
-// @Description DeleteMenu 메뉴 삭제 - 피주문자
+// @Description DeleteMenu 메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
 // @name DeleteMenu
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param IsDisabled path bool true "판매여부"
+// @Param Menu		body	model.Menu	true	"메뉴"
 // @Router /oos/seller/deleteMenu [put]
-// @Success 200 {object} Menu
+// @Success 200 {object} model.Menu
 func (p *Controller) DeleteMenu(c *gin.Context) {
 	logger.Info("[controller.DeleteMenu] start...")
 
-	menuName := c.PostForm("MenuName")
-	isDisabled := c.PostForm("IsDisabled")
+	menu, _ := UpdateMenuAppendQuery(c)
 
-	logger.Info("[controller.DeleteMenu Param]", menuName, isDisabled)
-	c.JSON(http.StatusOK, gin.H{"Persons": p.md.DeleteMenu(menuName, isDisabled)})
+	fmt.Println("[controller.DeleteMenu Param]", menu)
+	c.JSON(http.StatusOK, gin.H{"판매불가 설정되었습니다.": p.md.DeleteMenu(menu)})
 	// 	c.JSON(http.StatusOK, p.md.DeleteMenu(params))
 }
 
@@ -99,25 +106,24 @@ func (p *Controller) DeleteMenu(c *gin.Context) {
 // @name SearchMenu
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param Price path int true "가격"
-// @Param CountryOf path string true "원산지" Enums(한국, 일본, 중국)
-// @Param Category path string true "메뉴 카테고리" Enums(한식, 일식, 중식)
-// @Param Status path string true "주문 가능 상태" Enums(준비중, 판매중)
-// @Param Spicy path string true "맵기" Enums(아주매움, 매움, 보통, 순한맛)
-// @Param TodayMenu path bool false "오늘의 추천메뉴 여부"
-// @Router /oos/order/searchMenu [post]
-// @Success 200 {object} []Menu
+// @Param SellerID query  string false "판매자 ID"
+// @Param MenuName query  string false "메뉴이름"
+// @Param Price query  int false "가격"
+// @Param CountryOf query  string false "원산지" Enums(한국, 일본, 중국)
+// @Param Category query  string false "메뉴 카테고리" Enums(한식, 일식, 중식)
+// @Param Status query  string false "주문 가능 상태" Enums(준비중, 판매중, 판매완료)
+// @Param Spicy query  string false "맵기" Enums(아주매움, 매움, 보통, 순한맛)
+// @Param TodayMenu query  bool false "오늘의 추천메뉴 여부"
+// @Router /oos/seller/searchMenu [get]
+// @Success 200 {object} Controller
 func (p *Controller) SearchMenu(c *gin.Context) {
 	logger.Info("[controller.SearchMenu] start...")
 
-	var params model.Menu
-	if err := c.ShouldBind(&params); err == nil {
-		c.JSON(http.StatusOK, p.md.SearchMenu(params))
-	} else {
-		logger.Error(err)
-		c.JSON(http.StatusBadRequest, "ERROR")
-	}
+	filter := bson.D{}
+	_, filter = SearchMenuAppendQuery(c, filter) //검색 조건 쿼리 추가
+	fmt.Println("[controller.SearchMenu] filter : ", filter)
+	c.JSON(http.StatusOK, p.md.SearchMenu(filter))
+
 }
 
 // ViewMenu godoc
@@ -126,45 +132,37 @@ func (p *Controller) SearchMenu(c *gin.Context) {
 // @name ViewMenu
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Router /oos/order/viewMenu [post]
-// @Success 200 {object} Menu
+// @Param MenuID query string true "메뉴 ID"
+// @Router /oos/order/viewMenu [get]
+// @Success 200 {object} model.Menu
 func (p *Controller) ViewMenu(c *gin.Context) {
 	logger.Info("[controller.ViewMenu] start...")
 
-	menuName := c.PostForm("MenuName")
-	c.JSON(http.StatusOK, gin.H{"Persons": p.md.ViewMenu(menuName)})
+	menuId := c.Query("MenuID")
+	c.JSON(http.StatusOK, p.md.ViewMenu(menuId))
 }
 
 // SetTodayMenu godoc
 // @Summary call SetTodayMenu, return ok by json.
-// @Description SetTodayMenu 오늘의 추천메뉴 설정 변경
+// @Description SetTodayMenu 오늘의 추천메뉴 여부 - 설정 변경 (메뉴ID를 기준으로 메뉴 업데이트)
 // @name SetTodayMenu
 // @Accept  json
 // @Produce  json
-// @Param SellerID path string true "판매자 ID"
-// @Param MenuName path string true "메뉴이름"
-// @Param TodayMenu path bool true "오늘의 추천메뉴 여부"
-// @Router /oos/seller/setTodayMenu [post]
-// @Success 200 {object} Menu
+// @Param Menu		body	model.Menu	true	"메뉴"
+// @Router /oos/seller/setTodayMenu [put]
+// @Success 200 {object} model.Menu
 func (p *Controller) SetTodayMenu(c *gin.Context) {
 	logger.Info("[controller.SetTodayMenu] start...")
+	menu, _ := UpdateMenuAppendQuery(c)
+	fmt.Println("[controller.SetTodayMenu Param] menu : ", menu)
 
-	// var params model.Menu
-	// params.SellerID = c.PostForm("SellerID")
-	// TodayMenuboolValue, err := strconv.ParseBool(c.PostForm("TodayMenu"))
-	// if err != nil {
-	// 	logger.Error(err)
-	// }
-	// params.TodayMenu = TodayMenuboolValue
-	// params.IsDisabled = true
-	// params.MenuName = c.PostForm("MenuName")
+	updateFilter := bson.M{
+		"$set": bson.M{
+			"todayMenu": menu.TodayMenu,
+		},
+	}
 
-	params := setParamMenu(c)
-	logger.Info("[controller.SetTodayMenu Param]", params)
-
-	c.JSON(http.StatusOK, p.md.UpdateMenu(params))
-
+	c.JSON(http.StatusOK, p.md.UpdateMenu(menu, updateFilter))
 }
 
 // SearchTodayMenu godoc
@@ -173,20 +171,26 @@ func (p *Controller) SetTodayMenu(c *gin.Context) {
 // @name SearchTodayMenu
 // @Accept  json
 // @Produce  json
-// @Param SellerID path string true "판매자 ID"
-// @Router /oos/order/searchTodayMenu [post]
-// @Success 200 {object} []Menu
+// @Param SellerID query  string false "판매자 ID"
+// @Param MenuName query  string false "메뉴이름"
+// @Param Price query  int false "가격"
+// @Param CountryOf query  string false "원산지" Enums(한국, 일본, 중국)
+// @Param Category query  string false "메뉴 카테고리" Enums(한식, 일식, 중식)
+// @Param Status query  string false "주문 가능 상태" Enums(준비중, 판매중)
+// @Param Spicy query  string false "맵기" Enums(아주매움, 매움, 보통, 순한맛)
+// @Router /oos/order/searchTodayMenu [get]
+// @Success 200 {object} Controller
 func (p *Controller) SearchTodayMenu(c *gin.Context) {
 	logger.Info("[controller.SearchMenu] start...")
 
-	var params model.Menu
-	params.SellerID = c.PostForm("SellerID")
-	params.TodayMenu = true
-	params.IsDisabled = true
+	filter := bson.D{}
+	_, filter = SearchMenuAppendQuery(c, filter)
 
-	logger.Info("[controller.SetTodayMenu Param]", params)
+	//오늘의 추천메뉴 true 조회
+	filter = append(filter, bson.E{"todayMenu", true})
 
-	c.JSON(http.StatusOK, p.md.SearchMenu(params))
+	fmt.Println("[controller.SetTodayMenu filter]", filter)
+	c.JSON(http.StatusOK, p.md.SearchMenu(filter))
 }
 
 // NewOrder godoc
@@ -195,19 +199,38 @@ func (p *Controller) SearchTodayMenu(c *gin.Context) {
 // @name NewOrder
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param OrdererID path string true "주문자 ID"
-// @Param OrderStatus path string true "주문 상태" Enums(준비중, 주문취소, 배달중, 배달완료)
-// @Param OrdererAddress path string false "주문자 주소"
-// @Param OrdererPhone path int false "주문자 폰번호"
+// @Param	OrdererMenuLink	body	model.OrdererMenuLink	true	"오더"
 // @Router /oos/order/newOrder [post]
-// @Success 200 {object} OrdererMenuLink
+// @Success 200 {object} model.OrdererMenuLink
 func (p *Controller) NewOrder(c *gin.Context) {
 	logger.Info("[controller.NewOrder] start...")
 
 	var params model.OrdererMenuLink
 	if err := c.ShouldBind(&params); err == nil {
+
+		menuID := params.MenuID
+		if menuID == "" { //메뉴ID체크
+			logger.Info("[controller.NewOrder] menuID...", menuID)
+			errMsg := "등록된 메뉴 ID를 입력해주세요."
+			logger.Error(errMsg)
+			c.JSON(http.StatusBadRequest, errMsg)
+			return
+		}
+		//주문 상태를 확인해서 취소 가능 상태 제어
+		menu := p.md.ViewMenu(menuID)
+		if menu.IsDisabled {
+			c.JSON(http.StatusBadRequest, "주문할 수 없는 메뉴 입니다.")
+			return
+		} else if menu.Status == "판매완료" {
+			c.JSON(http.StatusBadRequest, "완판되었습니다.")
+			return
+		}
+
+		params.MenuName = menu.MenuName
+		params.SellerID = menu.SellerID
+
 		c.JSON(http.StatusOK, p.md.NewOrder(params))
+
 	} else {
 		logger.Error(err)
 		c.JSON(http.StatusBadRequest, "ERROR")
@@ -216,44 +239,91 @@ func (p *Controller) NewOrder(c *gin.Context) {
 
 // OrderStatus godoc
 // @Summary call OrderStatus, return ok by json.
-// @Description OrderStatus 주문 내역 조회 - 피주문자
+// @Description OrderStatus 주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)
 // @name OrderStatus
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param OrderStatus path string true "주문 상태" Enums(준비중, 주문취소, 배달중, 배달완료)
-// @Router /oos/seller/OrderStatus [post]
-// @Success 200 {object} []OrdererMenuLink
+// @Param SellerID query string true "판매자 ID"
+// @Param OrderStatus query string false "주문 상태" Enums(주문확인중,조리중,배달중,배달완료,주문취소)
+// @Router /oos/seller/orderStatus [get]
+// @Success 200 {object} Controller
 func (p *Controller) OrderStatus(c *gin.Context) {
 	logger.Info("[controller.OrderList] start...")
 
-	menuName := c.PostForm("MenuName")
-	orderStatus := c.PostForm("OrderStatus")
+	orderStatus := c.Query("OrderStatus")
+	sellerID := c.Query("SellerID")
 
-	logger.Info("[controller.OrderStatus Param]", menuName, orderStatus)
-	c.JSON(http.StatusOK, gin.H{"Persons": p.md.OrderStatus(menuName, orderStatus)})
+	fmt.Println("[controller.OrderStatus Param]", orderStatus, sellerID)
+	c.JSON(http.StatusOK, gin.H{"주문내역 리스트 ": p.md.OrderStatus(orderStatus, sellerID)})
 
+}
+
+// ViewOrder godoc
+// @Summary call ViewOrder, return ok by json.
+// @Description ViewOrder 주문 상세 - 주문자, 피주문자
+// @name ViewOrder
+// @Accept  json
+// @Produce  json
+// @Param OrderNo query string true "주문번호"
+// @Router /oos/order/viewOrder [get]
+// @Success 200 {object} Controller
+func (p *Controller) ViewOrder(c *gin.Context) {
+	logger.Info("[controller.ViewOrder] start...")
+
+	orderNO := c.Query("OrderNo")
+	fmt.Println("[controller.ViewOrder Param]", orderNO)
+	c.JSON(http.StatusOK, p.md.ViewOrder(orderNO))
 }
 
 // ChangeOrder godoc
 // @Summary call ChangeOrder, return ok by json.
-// @Description ChangeOrder 주문 변경 - 주문자 (수정/취소)
+// @Description ChangeOrder 주문 변경 - 주문자 (주문변경 커멘드 Enums(주문추가, 주문취소, 정보변경))
 // @name ChangeOrder
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param OrdererID path string true "주문자 ID"
-// @Param OrderStatus path string true "주문 상태" Enums(준비중, 주문취소, 배달중, 배달완료)
-// @Param OrdererAddress path string false "주문자 주소"
-// @Param OrdererPhone path int false "주문자 폰번호"
-// @Router /oos/order/changeOrder [post]
-// @Success 200 {object} OrdererMenuLink
+// @Param	OrdererMenuLink	body	model.OrdererMenuLink	true	"오더"
+// @Router /oos/order/changeOrder [put]
+// @Success 200 {object} Controller
 func (p *Controller) ChangeOrder(c *gin.Context) {
 	logger.Info("[controller.ChangeOrder] start...")
 
-	var params model.OrdererMenuLink
+	var params model.BindChangeOrderState
+
 	if err := c.ShouldBind(&params); err == nil {
-		c.JSON(http.StatusOK, p.md.ChangeOrder(params))
+
+		orderNO := params.OrderNo
+		changeOrderCmd := params.ChangeOrderCmd
+
+		fmt.Println("changeOrderCmd", changeOrderCmd)
+		omLink := p.md.ViewOrder(orderNO)
+		fmt.Println("OrdererMenuLink", omLink.OrderStatus)
+
+		//주문 상태를 확인해서 취소 가능 상태 제어 (미구현)
+		if changeOrderCmd == "주문취소" {
+			if omLink.OrderStatus == "조리중" ||
+				omLink.OrderStatus == "배달중" ||
+				omLink.OrderStatus == "배달완료" {
+				c.JSON(http.StatusBadRequest, "주문을 취소할 수 없는 상태입니다.")
+				return
+			}
+
+			omLink.OrderStatus = "주문취소"
+
+		} else if changeOrderCmd == "주문추가" {
+			if omLink.OrderStatus == "배달중" ||
+				omLink.OrderStatus == "배달완료" {
+				c.JSON(http.StatusBadRequest, "배달 중이어서 주문을 추가할 수 없는 상태입니다.")
+				return
+			}
+			omLink.OrderStatus = "주문확인중"
+		}
+		fmt.Println("OrdererMenuLink", omLink.OrderStatus)
+
+		omLink.OrdererAddress = params.OrdererAddress
+		omLink.OrdererPhone = params.OrdererPhone
+
+		c.JSON(http.StatusOK, p.md.ChangeOrder(omLink))
+
 	} else {
 		logger.Error(err)
 		c.JSON(http.StatusBadRequest, "ERROR")
@@ -266,34 +336,41 @@ func (p *Controller) ChangeOrder(c *gin.Context) {
 // @name SearchOrder
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param OrderStatus path string true "주문 상태" Enums(준비중, 주문취소, 배달중, 배달완료)
-// @Router /oos/order/searchOrder [post]
-// @Success 200 {object} []OrdererMenuLink
+// @Param OrdererID query string true "주문자 ID"
+// @Param MenuName query string false "메뉴이름"
+// @Param OrderStatus query string false "주문 상태" Enums( 주문확인중,조리중,배달중,배달완료,주문취소)
+// @Router /oos/order/searchOrder [get]
+// @Success 200 {object} Controller
 func (p *Controller) SearchOrder(c *gin.Context) {
-	logger.Info("[controller.SearchOrder] start...")
+	logger.Info("[controller.SearchOrder] start...", c.PostForm("OrdererID"))
 
 	var params model.OrdererMenuLink
-	if err := c.ShouldBind(&params); err == nil {
-		c.JSON(http.StatusOK, p.md.SearchOrder(params))
-	} else {
-		logger.Error(err)
-		c.JSON(http.StatusBadRequest, "ERROR")
-	}
+
+	params.OrdererID = c.Query("OrdererID")
+	params.MenuName = c.Query("MenuName")
+	params.OrderStatus = c.Query("OrderStatus")
+
+	fmt.Println("[model.SearchOrder params] ", params)
+
+	c.JSON(http.StatusOK, p.md.SearchOrder(params))
+
+	// if err := c.ShouldBind(&params); err == nil {
+	// 	c.JSON(http.StatusOK, p.md.SearchOrder(params))
+	// } else {
+	// 	logger.Error(err)
+	// 	c.JSON(http.StatusBadRequest, "ERROR")
+	// }
 }
 
 // CreateReview godoc
 // @Summary call CreateReview, return ok by json.
-// @Description CreateReview 리뷰 등록 - 주문자
+// @Description CreateReview 리뷰 등록 - 주문자 (주문번호 기준으로 등록)
 // @name CreateReview
 // @Accept  json
 // @Produce  json
-// @Param MenuName path string true "메뉴이름"
-// @Param OrdererID path string true "주문자 ID"
-// @Param OrderComment path string true "후기"
-// @Param OrderStarGrade path string true "평점"
+// @Param	OrdererMenuLink	body	model.OrdererMenuLink	true	"오더"
 // @Router /oos/order/createReview [post]
-// @Success 200 {object} OrdererMenuLink
+// @Success 200 {object} model.OrdererMenuLink
 func (p *Controller) CreateReview(c *gin.Context) {
 	logger.Info("[controller.CreateReview] start...")
 
