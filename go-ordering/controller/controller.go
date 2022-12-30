@@ -35,8 +35,11 @@ func (p *Controller) CreateMenu(c *gin.Context) {
 	var params model.Menu
 	if err := c.ShouldBind(&params); err == nil {
 
+		sellerID := params.SellerID
 		//메뉴 등록시 판매자 로그인 필수.
-		errChk, errMsg := checkCreateMenu(params)
+		user := p.md.GetUserAccount(sellerID)
+
+		errChk, errMsg := checkCreateMenu(params, user)
 		if errChk {
 			logger.Error(errMsg)
 			c.JSON(http.StatusBadRequest, errMsg)
@@ -67,18 +70,27 @@ func (p *Controller) CreateMenu(c *gin.Context) {
 // @name UpdateMenu
 // @Accept  json
 // @Produce  json
-// @Param Menu		body	model.Menu	true	"메뉴"
-// @Router /oos/seller/updateMenu [post]
+// @Param  menuID path string true "menuID"
+// @Param request	body	model.Menu	true	"변경할 메뉴"
+// @Router /oos/seller/updateMenu/{MenuID} [PATCH]
 // @Success 200 {object} model.Menu
 func (p *Controller) UpdateMenu(c *gin.Context) {
 	logger.Info("[controller.UpdateMenu] start...")
+
+	menuID := c.Param("menuID")
+	if menuID == "" {
+		errMsg := "메뉴ID가 입력되지 않았습니다."
+		logger.Error(errMsg)
+		c.JSON(http.StatusBadRequest, errMsg)
+		return
+	}
 
 	menu, updateFilter := UpdateMenuAppendQuery(c)
 
 	fmt.Println("[controller.UpdateMenu] menu...", menu)
 	fmt.Println("[controller.UpdateMenu] updateFilter...", updateFilter)
 
-	c.JSON(http.StatusOK, p.md.UpdateMenu(menu, updateFilter))
+	c.JSON(http.StatusOK, p.md.UpdateMenu(menuID, menu, updateFilter))
 }
 
 // DeleteMenu godoc
@@ -153,16 +165,25 @@ func (p *Controller) ViewMenu(c *gin.Context) {
 // @Success 200 {object} model.Menu
 func (p *Controller) SetTodayMenu(c *gin.Context) {
 	logger.Info("[controller.SetTodayMenu] start...")
+
+	menuID := c.PostForm("MenuID")
+	if menuID == "" {
+		errMsg := "메뉴ID가 입력되지 않았습니다."
+		logger.Error(errMsg)
+		c.JSON(http.StatusBadRequest, errMsg)
+		return
+	}
+
 	menu, _ := UpdateMenuAppendQuery(c)
 	fmt.Println("[controller.SetTodayMenu Param] menu : ", menu)
 
 	updateFilter := bson.M{
 		"$set": bson.M{
-			"todayMenu": menu.TodayMenu,
+			"isTdoayMenu": menu.IsTdoayMenu,
 		},
 	}
 
-	c.JSON(http.StatusOK, p.md.UpdateMenu(menu, updateFilter))
+	c.JSON(http.StatusOK, p.md.UpdateMenu(menuID, menu, updateFilter))
 }
 
 // SearchTodayMenu godoc
@@ -218,7 +239,7 @@ func (p *Controller) NewOrder(c *gin.Context) {
 		}
 		//주문 상태를 확인해서 취소 가능 상태 제어
 		menu := p.md.ViewMenu(menuID)
-		if menu.IsDisabled {
+		if menu.IsRecommeded {
 			c.JSON(http.StatusBadRequest, "주문할 수 없는 메뉴 입니다.")
 			return
 		} else if menu.Status == "판매완료" {
