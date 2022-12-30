@@ -11,12 +11,23 @@ import (
 )
 
 // @Description 메뉴 등록시 판매자 ID 체크 (로그인 여부)
-func checkCreateMenu(param model.Menu) (bool, string) {
+func checkCreateMenu(param model.Menu, user model.UserAccount) (bool, string) {
 	logger.Info("[controllerConvParams checkCreateMenu] SellerID : ", param.SellerID)
 	logger.Info("[controllerConvParams checkCreateMenu] MenuName : ", param.MenuName)
 	errChk := false
 	errMsg := ""
 
+	/*
+		판매자 아이디를 체크한다고 되어있는데, 로직을 살펴보면 빈 스트링 값만 아니면 에러가 발생하지 않고 통과되네요.
+		예를들면 SellerId 값으로 'GSODEIGNIOGNRO' 같은 값을 넣어도 판매자라고 인식을 하게 되네요.
+		권한 관리의 경우 미들웨어를 통해서 유저의 타입이 판매자인지, 구매자인지를 체크하는 로직들로 제어를 하는 것이 올바르다고 생각합니다.
+
+		gin 권한관리, permission middleware와 같은 키워드로 검색해보시기 바랍니다.
+	*/
+	if user.UserType != "판매자" {
+		errMsg = "로그인 유저가 판매자가 아닌 경우 메뉴를 만들 수 없습니다."
+		errChk = true
+	}
 	//메뉴 등록시 판매자 로그인 필수.
 	if param.SellerID == "" {
 		errMsg = "로그인해주세요. (판매자 ID (SellerID)는 필수 입니다.)"
@@ -68,12 +79,12 @@ func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
 			filter = append(filter, bson.E{"popularity", params.Popularity})
 
 		}
-		if c.Query("IsDisabled") != "" {
-			filter = append(filter, bson.E{"isDisabled", params.IsDisabled})
+		if c.Query("isRecommeded") != "" {
+			filter = append(filter, bson.E{"isRecommeded", params.IsRecommeded})
 
 		}
-		if c.Query("TodayMenu") != "" {
-			filter = append(filter, bson.E{"todayMenu", params.TodayMenu})
+		if c.Query("isTdoayMenu") != "" {
+			filter = append(filter, bson.E{"isTdoayMenu", params.IsTdoayMenu})
 
 		}
 		if c.Query("Category") != "" {
@@ -131,8 +142,8 @@ func UpdateMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
 
 		}
 		//별도 업데이트
-		// if params.IsDisabled != "" {
-		// 	filter["$set"].(bson.M)["isDisabled"] = params.IsDisabled
+		// if params.IsRecommeded != "" {
+		// 	filter["$set"].(bson.M)["isRecommeded"] = params.IsRecommeded
 
 		// }
 		// if params.TodayMenu != "" {
@@ -191,14 +202,14 @@ func setParamMenu(c *gin.Context) model.Menu {
 			params.Popularity = v
 		}
 	}
-	if c.PostForm("IsDisabled") != "" {
-		if v, err := strconv.ParseBool(c.PostForm("IsDisabled")); err == nil {
-			params.IsDisabled = v
+	if c.PostForm("IsRecommeded") != "" {
+		if v, err := strconv.ParseBool(c.PostForm("IsRecommeded")); err == nil {
+			params.IsRecommeded = v
 		}
 	}
-	if c.PostForm("TodayMenu") != "" {
-		if v, err := strconv.ParseBool(c.PostForm("TodayMenu")); err == nil {
-			params.TodayMenu = v
+	if c.PostForm("IsTdoayMenu") != "" {
+		if v, err := strconv.ParseBool(c.PostForm("IsTdoayMenu")); err == nil {
+			params.IsTdoayMenu = v
 		}
 	}
 	if c.PostForm("Category") != "" {
