@@ -89,6 +89,7 @@ func (p *Router) Idx() *gin.Engine {
 	{
 
 		seller.POST("/createMenu", p.ct.CreateMenu)
+		//PATCH로 변경
 		seller.PATCH("/updateMenu/:menuID", p.ct.UpdateMenu)
 		seller.PUT("/deleteMenu", p.ct.DeleteMenu)
 		seller.GET("/searchMenu", p.ct.SearchMenu)
