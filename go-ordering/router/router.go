@@ -87,8 +87,9 @@ func (p *Router) Idx() *gin.Engine {
 	//피주문자 그룹
 	seller := r.Group("oos/seller", liteAuth())
 	{
+
 		seller.POST("/createMenu", p.ct.CreateMenu)
-		seller.POST("/updateMenu", p.ct.UpdateMenu)
+		seller.PATCH("/updateMenu/:menuID", p.ct.UpdateMenu)
 		seller.PUT("/deleteMenu", p.ct.DeleteMenu)
 		seller.GET("/searchMenu", p.ct.SearchMenu)
 
