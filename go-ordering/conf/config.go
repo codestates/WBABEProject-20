@@ -22,6 +22,7 @@ type Config struct {
 		Database        string
 		MenuCollection  string
 		OrderCollection string
+		UserCollection  string
 	}
 
 	Log struct {
