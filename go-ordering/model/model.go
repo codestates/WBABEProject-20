@@ -13,9 +13,10 @@ import (
 )
 
 type Model struct {
-	client       *mongo.Client
-	colMenu      *mongo.Collection
-	colOrderLink *mongo.Collection
+	client         *mongo.Client
+	colMenu        *mongo.Collection
+	colOrderLink   *mongo.Collection
+	colUserAccount *mongo.Collection
 }
 
 // Model mongodb Connection
@@ -36,6 +37,8 @@ func NewModel(cfg *conf.Config) (*Model, error) {
 		db := r.client.Database(cf.Database)
 		r.colMenu = db.Collection(cf.MenuCollection)
 		r.colOrderLink = db.Collection(cf.OrderCollection)
+		r.colUserAccount = db.Collection(cf.UserCollection)
+
 	}
 	return r, nil
 }
@@ -56,21 +59,17 @@ func (p *Model) CreateMenu(menu Menu) Menu {
 }
 
 // 메뉴 수정 - 피주문자
-func (p *Model) UpdateMenu(menu Menu, updateFilter bson.M) Menu {
+func (p *Model) UpdateMenu(menuID string, menu Menu, updateFilter bson.M) Menu {
 	fmt.Println("[model.UpdateMenu Param] ", menu)
 
-	//메뉴ID의 파라메터가 없는 경우, 판매자ID와 메뉴이름으로 검색
-	// filter := bson.D{{}}
-	// if menu.MenuID != "" {
-	// 	filter = append(filter, bson.E{"menuID", menu.MenuID})
-	// } else {
-	// 	filter = append(filter, bson.E{"sellerID", menu.SellerID})
-	// 	filter = append(filter, bson.E{"menuName", menu.MenuName})
-	// }
-	menuID := menu.MenuID
-	if menuID == "" {
-		menuID = p.GetMenuID(menu.SellerID, menu.MenuName)
-	}
+	/*
+		업데이트 시에는 MenuId를 request body로 받는 것이 아니라 URI로서 값을 받아와 이용하는 것이 일반적입니다.
+		e.g PATCH /menu/1(메뉴아이디 값)
+	*/
+	/*
+		수정 내용
+		controller.go에서 URI로서 값을 받아 처리
+	*/
 	//메뉴ID 기준으로 메뉴 업데이트
 	filter := bson.D{{"menuID", menuID}}
 
@@ -90,7 +89,7 @@ func (p *Model) UpdateMenu(menu Menu, updateFilter bson.M) Menu {
 func (p *Model) DeleteMenu(menu Menu) Menu {
 
 	menuID := menu.MenuID
-	isDisabled := menu.IsDisabled
+	isRecommeded := menu.IsRecommeded
 
 	//메뉴ID의 파라메터가 없는 경우, 판매자ID와 메뉴이름으로 검색
 	if menuID == "" {
@@ -98,12 +97,12 @@ func (p *Model) DeleteMenu(menu Menu) Menu {
 	}
 
 	fmt.Println("[model.DeleteMenu Param menuID] ", menuID)
-	fmt.Println("[model.DeleteMenu Param isDisabled] ", isDisabled)
+	fmt.Println("[model.DeleteMenu Param isRecommeded] ", isRecommeded)
 
 	filter := bson.D{{"menuID", menuID}}
 	update := bson.M{
 		"$set": bson.M{
-			"isDisabled": isDisabled,
+			"isRecommeded": isRecommeded,
 		},
 	}
 
@@ -326,4 +325,21 @@ func (p *Model) CreateReview(omLink OrdererMenuLink) OrdererMenuLink {
 	fmt.Println("[model.CreateReview result.ModifiedCount] ", result.ModifiedCount)
 
 	return omLink
+}
+
+// 메뉴 상세 - 주문자, 피주문자
+func (p *Model) GetUserAccount(userID string) UserAccount {
+	fmt.Println("[model.GetUserAccount userID] ", userID)
+
+	var user UserAccount
+	filter := bson.D{{"userID", userID}}
+
+	err := p.colUserAccount.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		logger.Error(err)
+		panic(err)
+	}
+	fmt.Println("[model.GetUserAccount user] ", user)
+
+	return user
 }
