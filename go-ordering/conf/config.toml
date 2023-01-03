@@ -10,6 +10,7 @@ name = "userDB"
 database = "go-ready"
 menuCollection = "tMenu"
 orderCollection = "tOrdererMenuLink"
+userCollection = "tUserAccount"
 
 # [db.account]
 # host = "mongodb://localhost:27017"
