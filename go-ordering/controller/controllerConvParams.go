@@ -24,6 +24,10 @@ func checkCreateMenu(param model.Menu, user model.UserAccount) (bool, string) {
 
 		gin 권한관리, permission middleware와 같은 키워드로 검색해보시기 바랍니다.
 	*/
+	/*
+		수정내용
+		Seller와 Order를 User로 합치고, UserType으로 판매자 구매자를 구분
+	*/
 	if user.UserType != "판매자" {
 		errMsg = "로그인 유저가 판매자가 아닌 경우 메뉴를 만들 수 없습니다."
 		errChk = true
@@ -79,11 +83,11 @@ func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
 			filter = append(filter, bson.E{"popularity", params.Popularity})
 
 		}
-		if c.Query("isRecommeded") != "" {
+		if c.Query("IsRecommeded") != "" {
 			filter = append(filter, bson.E{"isRecommeded", params.IsRecommeded})
 
 		}
-		if c.Query("isTdoayMenu") != "" {
+		if c.Query("IsTdoayMenu") != "" {
 			filter = append(filter, bson.E{"isTdoayMenu", params.IsTdoayMenu})
 
 		}
