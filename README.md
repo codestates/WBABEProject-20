@@ -25,7 +25,6 @@
  ┃ ┗ 📜go-loger_2022-12-25.log </br>
  ┣ 📂model </br>
  ┃ ┣ 📜model.go </br>
- ┃ ┣ 📜modelBody.go </br>
  ┃ ┣ 📜modelDataCheck.go </br>
  ┃ ┗ 📜modelStruct.go </br>
  ┣ 📂router </br>
@@ -67,9 +66,17 @@
  
  ## 4. DataBase
  ### Database : go-ready
+ ### 유저 Collection : tUserAccount
  ### 메뉴 Collection : tMenu
  ### 주문리스트 Collection : tOrdererMenuLink
  >>tOrdererMenuLink에 MenuID 속성을 추가하여 tMenu와 링크 관리
+ 
+ ### 초기값 설정 : 유저 설정을 위해 DB에 유저값을 INSERT한다. (유저등록은 구현안함)
+ <pre><code>
+ db.tUserAccount.insertMany([{userID:"order79",userName:"김철수",userType:"판매자"}
+,{userID:"seller79",userName:"김영희",userType:"주문자"}])
+ </code></pre>
+ 
  ### 속성
  <pre><code>
  type Menu struct {
@@ -99,6 +106,16 @@ type OrdererMenuLink struct {
 	OrderStatus    string `bson:"orderStatus"`    //주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
 	OrdererAddress string `bson:"ordererAddress"` //주문자 주소
 	OrdererPhone   int    `bson:"ordererPhone"`   //주문자 폰번호
+}
+
+type UserAccount struct {
+	UserID     string `bson:"userID"`     //주문자 ID
+	UserName   string `bson:"userName"`   //주문자 이름
+	UserType   string `bson:"userType"`   //판매자, 주문자 nums(판매자, 주문자)
+	Address    string `bson:"address"`    //주문자 주소
+	Phone      int    `bson:"phone"`      //주문자 폰번호
+	OrderCount int    `bson:"orderCount"` //주문 숫자
+	SellCount  int    `bson:"sellCount"`  //주문 숫자
 }
  </code></pre>
 
