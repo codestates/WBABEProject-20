@@ -73,8 +73,8 @@
  
  ### 초기값 설정 : 유저 설정을 위해 DB에 유저값을 INSERT한다. (유저등록은 구현안함)
  <pre><code>
- db.tUserAccount.insertMany([{userID:"order79",userName:"김철수",userType:"판매자"}
-,{userID:"seller79",userName:"김영희",userType:"주문자"}])
+ db.tUserAccount.insertMany([{userID:"LEE",userName:"이철수",userType:"판매자"}
+,{userID:"KIM",userName:"김영희",userType:"주문자"}])
  </code></pre>
  
  ### 속성
@@ -122,12 +122,12 @@ type UserAccount struct {
  ## 5. API 구현 기능
  ### 피주문자 
  <pre><code>
- /oos/seller/createMenu     // @Description  메뉴 등록 - 피주문자
- /oos/seller/updateMenu     // @Description  메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
- /oos/seller/deleteMenu     // @Description  메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
- /oos/seller/searchMenu     // @Description  메뉴 검색 - 주문자, 피주문자
- /oos/seller/orderStatus    // @Description  주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)
- /oos/seller/setTodayMenu   // @Description  오늘의 추천메뉴 여부 - 설정 변경 (메뉴ID를 기준으로 메뉴 업데이트)
+ /oos/seller/menu [POST]         // @Description  메뉴 등록 - 피주문자
+ /oos/seller/menu{menuID} [PUT]  // @Description  메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
+ /oos/seller/menu [DELETE]       // @Description  메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
+ /oos/seller/menu [GET]          // @Description  메뉴 검색 - 주문자, 피주문자
+ /oos/seller/orderStatus         // @Description  주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)
+ /oos/seller/setTodayMenu        // @Description  오늘의 추천메뉴 여부 - 설정 변경 (메뉴ID를 기준으로 메뉴 업데이트)
  </code></pre>
  
  ### 주문자 
@@ -142,14 +142,14 @@ type UserAccount struct {
  </code></pre>
 
  ### Swagger 참고
- ![image](https://user-images.githubusercontent.com/119834304/209761076-0044c37e-f793-4abc-ad25-b0f84f38337a.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210493375-f3c12e9a-b0f3-4355-ae01-7d13ddfc9507.png)
 
- #### /oos/seller/createMenu     // @Description  메뉴 등록 - 피주문자
+ #### /oos/seller/menu [POST]     // @Description  메뉴 등록 - 피주문자
  <pre><code>
  {
   "category": "중식",
   "countryOf": "대한민국",
-  "isDisabled": true,
+  "isRecommeded": true,
   "maxCount": 20,
   "menuName": "삼선짜장",
   "price": 6500,
@@ -157,37 +157,35 @@ type UserAccount struct {
   "sellerName": "리반점",
   "spicy": "보통",
   "status": "판매중",
-  "todayMenu": true
+  "isTdoayMenu": true
  }
  </code></pre>
- ![image](https://user-images.githubusercontent.com/119834304/209761441-6f810d9b-c275-44d2-8e56-b6fd3547d576.png)
- ![image](https://user-images.githubusercontent.com/119834304/209761473-f01f5ae0-104e-497e-8160-b87f5c81736f.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210488284-2070cf6d-9a14-459d-a1b2-128106b6ceae.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210488316-77a2a52d-f977-4af5-b40e-bb22de49d9a4.png)
 
- #### /oos/seller/updateMenu     // @Description  메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
+ #### /oos/seller/menu/{menuID} [PUT]     // @Description  메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
  <pre><code>
+ "menuID": "ee097877-2878-43da-b312-f72f4a233089"
  {
-  "menuID": "b53d53a889e34a77b28c2f5642bc67b4",
   "countryOf": "중국",
   "price": 8500,
   "spicy": "매움"
  }
  </code></pre>
- ![image](https://user-images.githubusercontent.com/119834304/209761825-fb78344e-e9b0-4f0a-8de4-5f6cbcb0c818.png)
- ![image](https://user-images.githubusercontent.com/119834304/209761909-c55438c4-2f13-4eb9-b3e9-c37741ce7a8a.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210488460-7253a5ea-2dc0-4bf2-b803-831107bdfa70.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210488487-262525fe-8f0d-49d1-a6ce-256deb9db549.png)
 
- #### /oos/seller/deleteMenu     // @Description  메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
+ #### /oos/seller/menu [DELETE]     // @Description  메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
  <pre><code>
- {
-  "isDisabled": true,
-  "menuID": "b53d53a889e34a77b28c2f5642bc67b4"
- }
+   "menuID": "ee097877-2878-43da-b312-f72f4a233089"
+   "isRecommeded": true
  </code></pre>
- ![image](https://user-images.githubusercontent.com/119834304/209762002-3a99bed2-783a-4d5f-a626-bcc44b7e8f8b.png)
- ![image](https://user-images.githubusercontent.com/119834304/209762105-aaf77c3d-a38d-4e49-b5e7-14ecd8d1272b.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210489805-2e61bf73-aa0a-43ea-85e3-1c108ca19082.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210489832-042bdb5d-8c7d-45f4-8fb0-c33f0ca827ec.png)
 
- #### /oos/seller/searchMenu     // @Description  메뉴 검색 - 주문자, 피주문자
- ![image](https://user-images.githubusercontent.com/119834304/209762317-3837b7cc-e9d7-4ad9-bee5-5518f9156231.png)
- ![image](https://user-images.githubusercontent.com/119834304/209762362-f74673ca-88fd-4492-be9c-422af1371237.png)
+ #### /oos/seller/menu [GET]     // @Description  메뉴 검색 - 주문자, 피주문자
+ ![image](https://user-images.githubusercontent.com/119834304/210492938-03019ca1-2571-4934-b4af-737f27da67cb.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210492978-09994142-7dec-4f3e-8b52-ec447df99c70.png)
  
  #### /oos/seller/orderStatus    // @Description  주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)
  ![image](https://user-images.githubusercontent.com/119834304/209762474-060f077c-846f-49b1-80c9-116b49031f48.png)
@@ -197,7 +195,7 @@ type UserAccount struct {
  <pre><code>
  {
   "todayMenu": true,
-  "menuID": "b53d53a889e34a77b28c2f5642bc67b4"
+  "menuID": "ee097877-2878-43da-b312-f72f4a233089"
  }
  </code></pre>
  ![image](https://user-images.githubusercontent.com/119834304/209763087-ffb6dba2-05e5-4f04-938f-728d2bb88fe8.png)
@@ -206,7 +204,7 @@ type UserAccount struct {
  #### /oos/order/newOrder        // @Description  주문 등록 - 주문자
  <pre><code>
  {
-  "menuID": "b53d53a889e34a77b28c2f5642bc67b4",
+  "menuID": "ee097877-2878-43da-b312-f72f4a233089",
    "ordererID": "KIM",
    "ordererAddress": "서울시 광진구",
    "ordererPhone": 1012345678
