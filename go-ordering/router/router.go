@@ -88,11 +88,45 @@ func (p *Router) Idx() *gin.Engine {
 	seller := r.Group("oos/seller", liteAuth())
 	{
 
-		seller.POST("/createMenu", p.ct.CreateMenu)
-		//PATCH로 변경
-		seller.PATCH("/updateMenu/:menuID", p.ct.UpdateMenu)
-		seller.PUT("/deleteMenu", p.ct.DeleteMenu)
-		seller.GET("/searchMenu", p.ct.SearchMenu)
+		/*
+			해당 부분에 대해서 전반적으로 코멘트를 남깁니다.
+
+			1. REST에 대해서 조금 더 공부가 필요해 보입니다.
+				자원을 가져오는 것 : GET
+				자원을 생성하는 것 : POST
+				자원을 업데이트 하는 것 : PUT, PATCH
+				자원을 삭제 하는 것 : DELETE
+				기본적으로 위의 규칙을 지켜야 REST API라고 할 수 있습니다. 자세한 내용은 'REST API 성숙도 모델' 의 키워드로 검색해보시면 좋을 것 같습니다.
+			2. 엔드포인트 네이밍으로 create, update, delete, search와 같은 것이 들어갈 필요가 없습니다.
+				HTTP URI의 이름에 위와 같은 단어가 들어가는 것이 아닌,
+				/order/menu 라는 URI로 GET을 한다면 메뉴에 대한 정보를 가져오는 것, POST 라면 메뉴를 생성하는 것, PATCH 라면 메뉴 정보를 업데이트하는 것과 같은 패턴으로 구성을 하셔야 합니다.
+		*/
+
+		seller.POST("/menu", p.ct.CreateMenu)
+		/*
+			메뉴에 대한 정보를 업데이트하는 것은 POST가 아니라 PUT, 혹은 PATCH가 되어야 합니다.
+		*/
+		/*
+			수정내용
+			PUT 변경
+		*/
+		seller.PUT("/menu/:menuID", p.ct.UpdateMenu)
+		/*
+			메뉴를 삭제하는 API인데 PUT이 아닌 DELETE가 되어야 할 것 같습니다.
+		*/
+		/*
+			수정내용
+			DELETE로 변경
+		*/
+		seller.DELETE("/menu", p.ct.DeleteMenu)
+		/*
+			메뉴에 대한 정보를 가져오는 것이므로, GET이 되어야 합니다.
+		*/
+		/*
+			수정내용
+			GET으로 변경
+		*/
+		seller.GET("/menu", p.ct.SearchMenu)
 
 		seller.GET("/orderStatus", p.ct.OrderStatus)
 		seller.PUT("/setTodayMenu", p.ct.SetTodayMenu)
