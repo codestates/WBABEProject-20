@@ -6,6 +6,7 @@ import (
 	"WBABEProject-20/go-ordering/logger"
 	"context"
 	"fmt"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -86,18 +87,12 @@ func (p *Model) UpdateMenu(menuID string, menu Menu, updateFilter bson.M) Menu {
 }
 
 // 메뉴 삭제 - 피주문자 (삭제하지않고 상태변경으로 비표시)
-func (p *Model) DeleteMenu(menu Menu) Menu {
-
-	menuID := menu.MenuID
-	isRecommeded := menu.IsRecommeded
-
-	//메뉴ID의 파라메터가 없는 경우, 판매자ID와 메뉴이름으로 검색
-	if menuID == "" {
-		menuID = p.GetMenuID(menu.SellerID, menu.MenuName)
-	}
+func (p *Model) DeleteMenu(menuID string, isRecommededstr string) Menu {
 
 	fmt.Println("[model.DeleteMenu Param menuID] ", menuID)
-	fmt.Println("[model.DeleteMenu Param isRecommeded] ", isRecommeded)
+	fmt.Println("[model.DeleteMenu Param isRecommeded] ", isRecommededstr)
+
+	isRecommeded, _ := strconv.ParseBool(isRecommededstr)
 
 	filter := bson.D{{"menuID", menuID}}
 	update := bson.M{
