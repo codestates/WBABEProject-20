@@ -11,7 +11,7 @@ package model
 	UserAccount 하나로 수정, UserType으로 판매자/주문자를 구분
 */
 
-// 지금은 화면 처리 안되기 때문에 ID 없음. 구현 안함.
+// DB는 INSERT하고, 값을 가져오기 위해 사용
 type UserAccount struct {
 	UserID     string `bson:"userID"`     //주문자 ID
 	UserName   string `bson:"userName"`   //주문자 이름
@@ -66,10 +66,14 @@ type OrdererMenuLink struct {
 	OrdererPhone   int    `bson:"ordererPhone"`   //주문자 폰번호
 }
 
+/*
+수정내용
+필수에는 binding:"required"를 추가
+*/
 type BindChangeOrderState struct {
-	OrderNo        string `bson:"orderNo"`        //주문번호
-	OrderStatus    string `bson:"orderStatus"`    //주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
-	OrdererAddress string `bson:"ordererAddress"` //주문자 주소
-	OrdererPhone   int    `bson:"ordererPhone"`   //주문자 폰번호
-	ChangeOrderCmd string `bson:"changeOrderCmd"` //주문 변경 Enums(주문추가, 주문취소, 정보변경)
+	OrderNo        string `bson:"orderNo" binding:"required"` //주문번호
+	OrderStatus    string `bson:"orderStatus"`                //주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
+	OrdererAddress string `bson:"ordererAddress"`             //주문자 주소
+	OrdererPhone   int    `bson:"ordererPhone"`               //주문자 폰번호
+	ChangeOrderCmd string `bson:"changeOrderCmd"`             //주문 변경 Enums(주문추가, 주문취소, 정보변경)
 }
