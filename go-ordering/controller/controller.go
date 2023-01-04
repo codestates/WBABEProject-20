@@ -27,16 +27,20 @@ func NewCTL(rep *model.Model) (*Controller, error) {
 // @Accept  json
 // @Produce  json
 // @Param	Menu	body	model.Menu	true	"메뉴"
-// @Router /oos/seller/createMenu [post]
+// @Router /oos/seller/menu [post]
 // @Success 200 {object} model.Menu
 func (p *Controller) CreateMenu(c *gin.Context) {
 	logger.Info("[controller.CreateMenu] start...")
 
 	var params model.Menu
 	if err := c.ShouldBind(&params); err == nil {
-
+		fmt.Println("[controller.CreateMenu] params :", params)
 		sellerID := params.SellerID
 		//메뉴 등록시 판매자 로그인 필수.
+		/*
+			수정내용
+			로그인 유저를 확인하기 위해, UserAccount를 가져온다.
+		*/
 		user := p.md.GetUserAccount(sellerID)
 
 		errChk, errMsg := checkCreateMenu(params, user)
@@ -72,11 +76,15 @@ func (p *Controller) CreateMenu(c *gin.Context) {
 // @Produce  json
 // @Param  menuID path string true "menuID"
 // @Param request	body	model.Menu	true	"변경할 메뉴"
-// @Router /oos/seller/updateMenu/{MenuID} [PATCH]
+// @Router /oos/seller/menu/{menuID} [PUT]
 // @Success 200 {object} model.Menu
 func (p *Controller) UpdateMenu(c *gin.Context) {
 	logger.Info("[controller.UpdateMenu] start...")
 
+	/*
+		수정내용
+		메뉴 삭제를 post에서 patch로 변경하면서 Param을 수정
+	*/
 	menuID := c.Param("menuID")
 	if menuID == "" {
 		errMsg := "메뉴ID가 입력되지 않았습니다."
@@ -99,16 +107,26 @@ func (p *Controller) UpdateMenu(c *gin.Context) {
 // @name DeleteMenu
 // @Accept  json
 // @Produce  json
-// @Param Menu		body	model.Menu	true	"메뉴"
-// @Router /oos/seller/deleteMenu [put]
+// @Router /oos/seller/menu [delete]
+// @Param menuID query string true "menuID"
+// @Param isRecommeded query string true "isRecommeded"
 // @Success 200 {object} model.Menu
 func (p *Controller) DeleteMenu(c *gin.Context) {
 	logger.Info("[controller.DeleteMenu] start...")
 
-	menu, _ := UpdateMenuAppendQuery(c)
+	/*
+		수정내용
+		메뉴 삭제를 put에서 delete로 변경하면서 Param을 수정
+	*/
+	menuId := c.Query("menuID")
+	isRecommededstr := c.Query("isRecommeded")
 
-	fmt.Println("[controller.DeleteMenu Param]", menu)
-	c.JSON(http.StatusOK, gin.H{"판매불가 설정되었습니다.": p.md.DeleteMenu(menu)})
+	//menu, _ := UpdateMenuAppendQuery(c)
+
+	fmt.Println("[controller.DeleteMenu menuId]", menuId)
+	fmt.Println("[controller.DeleteMenu isRecommeded]", isRecommededstr)
+
+	c.JSON(http.StatusOK, gin.H{"판매불가 설정되었습니다.": p.md.DeleteMenu(menuId, isRecommededstr)})
 	// 	c.JSON(http.StatusOK, p.md.DeleteMenu(params))
 }
 
@@ -126,7 +144,7 @@ func (p *Controller) DeleteMenu(c *gin.Context) {
 // @Param Status query  string false "주문 가능 상태" Enums(준비중, 판매중, 판매완료)
 // @Param Spicy query  string false "맵기" Enums(아주매움, 매움, 보통, 순한맛)
 // @Param TodayMenu query  bool false "오늘의 추천메뉴 여부"
-// @Router /oos/seller/searchMenu [get]
+// @Router /oos/seller/menu [get]
 // @Success 200 {object} Controller
 func (p *Controller) SearchMenu(c *gin.Context) {
 	logger.Info("[controller.SearchMenu] start...")
