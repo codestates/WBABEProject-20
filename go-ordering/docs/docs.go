@@ -299,111 +299,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/oos/seller/createMenu": {
-            "post": {
-                "description": "CreateMenu 메뉴 등록 - 피주문자",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "call CreateMenu, return ok by json.",
-                "parameters": [
-                    {
-                        "description": "메뉴",
-                        "name": "Menu",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Menu"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Menu"
-                        }
-                    }
-                }
-            }
-        },
-        "/oos/seller/deleteMenu": {
-            "put": {
-                "description": "DeleteMenu 메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "call DeleteMenu, return ok by json.",
-                "parameters": [
-                    {
-                        "description": "메뉴",
-                        "name": "Menu",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Menu"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Menu"
-                        }
-                    }
-                }
-            }
-        },
-        "/oos/seller/orderStatus": {
-            "get": {
-                "description": "OrderStatus 주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "call OrderStatus, return ok by json.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "판매자 ID",
-                        "name": "SellerID",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "주문확인중",
-                            "조리중",
-                            "배달중",
-                            "배달완료",
-                            "주문취소"
-                        ],
-                        "type": "string",
-                        "description": "주문 상태",
-                        "name": "OrderStatus",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/controller.Controller"
-                        }
-                    }
-                }
-            }
-        },
-        "/oos/seller/searchMenu": {
+        "/oos/seller/menu": {
             "get": {
                 "description": "SearchMenu 메뉴 검색 - 주문자, 피주문자",
                 "consumes": [
@@ -492,18 +388,16 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/oos/seller/setTodayMenu": {
-            "put": {
-                "description": "SetTodayMenu 오늘의 추천메뉴 여부 - 설정 변경 (메뉴ID를 기준으로 메뉴 업데이트)",
+            },
+            "post": {
+                "description": "CreateMenu 메뉴 등록 - 피주문자",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "call SetTodayMenu, return ok by json.",
+                "summary": "call CreateMenu, return ok by json.",
                 "parameters": [
                     {
                         "description": "메뉴",
@@ -523,10 +417,44 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "DeleteMenu 메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "call DeleteMenu, return ok by json.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "menuID",
+                        "name": "menuID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "isRecommeded",
+                        "name": "isRecommeded",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Menu"
+                        }
+                    }
+                }
             }
         },
-        "/oos/seller/updateMenu": {
-            "post": {
+        "/oos/seller/menu/{menuID}": {
+            "put": {
                 "description": "UpdateMenu 메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)",
                 "consumes": [
                     "application/json"
@@ -535,6 +463,86 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "summary": "call UpdateMenu, return ok by json.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "menuID",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "변경할 메뉴",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Menu"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Menu"
+                        }
+                    }
+                }
+            }
+        },
+        "/oos/seller/orderStatus": {
+            "get": {
+                "description": "OrderStatus 주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "call OrderStatus, return ok by json.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "판매자 ID",
+                        "name": "SellerID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "주문확인중",
+                            "조리중",
+                            "배달중",
+                            "배달완료",
+                            "주문취소"
+                        ],
+                        "type": "string",
+                        "description": "주문 상태",
+                        "name": "OrderStatus",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.Controller"
+                        }
+                    }
+                }
+            }
+        },
+        "/oos/seller/setTodayMenu": {
+            "put": {
+                "description": "SetTodayMenu 오늘의 추천메뉴 여부 - 설정 변경 (메뉴ID를 기준으로 메뉴 업데이트)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "call SetTodayMenu, return ok by json.",
                 "parameters": [
                     {
                         "description": "메뉴",
@@ -572,8 +580,12 @@ const docTemplate = `{
                     "description": "원산지 Enums(한국, 일본, 중국)",
                     "type": "string"
                 },
-                "isDisabled": {
-                    "description": "판매여부 default(true)",
+                "isRecommeded": {
+                    "description": "bool 값들의 경우는 네이밍시에 일반적으로 긍정의 단어를 사용하고, 그 여부는 true, false로 제어합니다.\n\t\t즉, 추천드리는 네이밍은 IsAvailable, IsPublic, ForSale 이 되겠습니다.\n\t\tdisable이라는 부정의 의미보다는 긍정의 의미로 네이밍을 짓고 변수 값으로 여부를 판단하는 것이 더 읽기에 자연스럽습니다.\n\n\t\t수정내용\n\t\t명칭 변경\n\t\tIsDisabled \u003e IsRecommeded\n\t\tTodayMenu \u003e IsTdoayMenu",
+                    "type": "boolean"
+                },
+                "isTdoayMenu": {
+                    "description": "TodayMenu만 보고서는 bool 값인지 유추하기가 힘들어 보입니다. 현재는 오늘의 메뉴가 무엇인지 하는 String 데이터가 예상이 됩니다.\n\t\t따라서 IsRecommeded, IsTdoayMenu 과 같은 네이밍이 적절해 보입니다.",
                     "type": "boolean"
                 },
                 "maxCount": {
@@ -611,10 +623,6 @@ const docTemplate = `{
                 "status": {
                     "description": "주문 가능 상태 nums(준비중, 판매중)",
                     "type": "string"
-                },
-                "todayMenu": {
-                    "description": "오늘의 추천메뉴 여부 default(false)",
-                    "type": "boolean"
                 }
             }
         },
