@@ -573,8 +573,11 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "category": {
-                    "description": "메뉴 카테고리 Enums(한식, 일식, 중식)",
-                    "type": "string"
+                    "description": "수정내용\n\t메뉴 카테고리를 별도의 구조체로 생성해서 메뉴에 카테고리를 0~2개 이상의 값을 지니도록 수정",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "countryOf": {
                     "description": "원산지 Enums(한국, 일본, 중국)",
@@ -590,7 +593,9 @@ const docTemplate = `{
                 },
                 "maxCount": {
                     "description": "판매 가능 갯수 mininum(1) maxinum(50)",
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 50,
+                    "minimum": 1
                 },
                 "menuID": {
                     "description": "메뉴 ID",
@@ -602,7 +607,9 @@ const docTemplate = `{
                 },
                 "popularity": {
                     "description": "인기도 mininum(1) maxinum(5)",
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 },
                 "price": {
                     "description": "가격",
@@ -647,7 +654,9 @@ const docTemplate = `{
                 },
                 "orderStarGrade": {
                     "description": "평점 mininum(1) maxinum(5)",
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 },
                 "orderStatus": {
                     "description": "주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)",
