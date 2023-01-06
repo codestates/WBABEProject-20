@@ -4,8 +4,10 @@ definitions:
   model.Menu:
     properties:
       category:
-        description: 메뉴 카테고리 Enums(한식, 일식, 중식)
-        type: string
+        description: "수정내용\n\t메뉴 카테고리를 별도의 구조체로 생성해서 메뉴에 카테고리를 0~2개 이상의 값을 지니도록 수정"
+        items:
+          type: string
+        type: array
       countryOf:
         description: 원산지 Enums(한국, 일본, 중국)
         type: string
@@ -21,6 +23,8 @@ definitions:
         type: boolean
       maxCount:
         description: 판매 가능 갯수 mininum(1) maxinum(50)
+        maximum: 50
+        minimum: 1
         type: integer
       menuID:
         description: 메뉴 ID
@@ -30,6 +34,8 @@ definitions:
         type: string
       popularity:
         description: 인기도 mininum(1) maxinum(5)
+        maximum: 5
+        minimum: 1
         type: integer
       price:
         description: 가격
@@ -63,6 +69,8 @@ definitions:
         type: string
       orderStarGrade:
         description: 평점 mininum(1) maxinum(5)
+        maximum: 5
+        minimum: 1
         type: integer
       orderStatus:
         description: 주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
