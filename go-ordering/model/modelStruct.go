@@ -22,17 +22,21 @@ type UserAccount struct {
 	SellCount  int    `bson:"sellCount"`  //주문 숫자
 }
 
+/*
+수정내용
+validate 값 min, max를 정의
+*/
 type Menu struct {
-	MenuID     string `bson:"menuID"`     //메뉴 ID
-	SellerID   string `bson:"sellerID"`   //판매자 ID
-	SellerName string `bson:"sellerName"` //판매자 이름
-	MenuName   string `bson:"menuName"`   //메뉴 이름
-	Status     string `bson:"status"`     //주문 가능 상태 nums(준비중, 판매중)
-	MaxCount   int    `bson:"maxCount"`   //판매 가능 갯수 mininum(1) maxinum(50)
-	CountryOf  string `bson:"countryOf"`  //원산지 Enums(한국, 일본, 중국)
-	Price      int    `bson:"price"`      //가격
-	Spicy      string `bson:"spicy"`      //맵기 Enums(아주매움, 매움, 보통, 순한맛)
-	Popularity int    `bson:"popularity"` //인기도 mininum(1) maxinum(5)
+	MenuID     string `bson:"menuID"`                            //메뉴 ID
+	SellerID   string `bson:"sellerID"`                          //판매자 ID
+	SellerName string `bson:"sellerName"`                        //판매자 이름
+	MenuName   string `bson:"menuName"`                          //메뉴 이름
+	Status     string `bson:"status"`                            //주문 가능 상태 nums(준비중, 판매중)
+	MaxCount   int    `bson:"maxCount" validate:"min=1,max=50"`  //판매 가능 갯수 mininum(1) maxinum(50)
+	CountryOf  string `bson:"countryOf"`                         //원산지 Enums(한국, 일본, 중국)
+	Price      int    `bson:"price"`                             //가격
+	Spicy      string `bson:"spicy"`                             //맵기 Enums(아주매움, 매움, 보통, 순한맛)
+	Popularity int    `bson:"popularity" validate:"min=1,max=5"` //인기도 mininum(1) maxinum(5)
 	/*
 		bool 값들의 경우는 네이밍시에 일반적으로 긍정의 단어를 사용하고, 그 여부는 true, false로 제어합니다.
 		즉, 추천드리는 네이밍은 IsAvailable, IsPublic, ForSale 이 되겠습니다.
@@ -49,21 +53,26 @@ type Menu struct {
 		TodayMenu만 보고서는 bool 값인지 유추하기가 힘들어 보입니다. 현재는 오늘의 메뉴가 무엇인지 하는 String 데이터가 예상이 됩니다.
 		따라서 IsRecommeded, IsTdoayMenu 과 같은 네이밍이 적절해 보입니다.
 	*/
-	IsTdoayMenu bool   `bson:"isTdoayMenu"` //오늘의 추천메뉴 여부 default(false)
-	Category    string `bson:"category"`    //메뉴 카테고리 Enums(한식, 일식, 중식)
+	IsTdoayMenu bool `bson:"isTdoayMenu"` //오늘의 추천메뉴 여부 default(false)
+
+	/*
+		수정내용
+		메뉴 카테고리를 별도의 구조체로 생성해서 메뉴에 카테고리를 0~2개 이상의 값을 지니도록 수정
+	*/
+	Category []string `bson:"category"` //메뉴 카테고리 Enums(한식, 일식, 중식)
 }
 
 type OrdererMenuLink struct {
-	OrderNo        string `bson:"orderNo"`        //주문번호
-	SellerID       string `bson:"sellerID"`       //판매자 ID
-	MenuID         string `bson:"menuID"`         //메뉴 ID
-	OrdererID      string `bson:"ordererID"`      //주문자ID
-	MenuName       string `bson:"menuName"`       //메뉴이름
-	OrderStarGrade int    `bson:"orderStarGrade"` //평점 mininum(1) maxinum(5)
-	OrderComment   string `bson:"ordercomment"`   //후기
-	OrderStatus    string `bson:"orderStatus"`    //주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
-	OrdererAddress string `bson:"ordererAddress"` //주문자 주소
-	OrdererPhone   int    `bson:"ordererPhone"`   //주문자 폰번호
+	OrderNo        string `bson:"orderNo"`                               //주문번호
+	SellerID       string `bson:"sellerID"`                              //판매자 ID
+	MenuID         string `bson:"menuID"`                                //메뉴 ID
+	OrdererID      string `bson:"ordererID"`                             //주문자ID
+	MenuName       string `bson:"menuName"`                              //메뉴이름
+	OrderStarGrade int    `bson:"orderStarGrade" validate:"min=1,max=5"` //평점 mininum(1) maxinum(5)
+	OrderComment   string `bson:"ordercomment"`                          //후기
+	OrderStatus    string `bson:"orderStatus"`                           //주문상태 Enums(주문확인중 - 조리중 - 배달중 - 배달완료 - 주문취소)
+	OrdererAddress string `bson:"ordererAddress"`                        //주문자 주소
+	OrdererPhone   int    `bson:"ordererPhone"`                          //주문자 폰번호
 }
 
 /*
