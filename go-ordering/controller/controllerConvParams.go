@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -45,54 +46,60 @@ func checkCreateMenu(param model.Menu, user model.UserAccount) (bool, string) {
 	return errChk, errMsg
 }
 
+/*
+	수정내용
+	카테고리 배열 변경으로 검색 조건 변경
+*/
 // @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
-func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
+func SearchMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
 
+	fmt.Println("[SearchMenuAppendQuery] atart ")
+
+	filter := bson.M{}
 	var params model.Menu
 	if err := c.ShouldBind(&params); err == nil {
 
 		if c.Query("MenuID") != "" {
-			filter = append(filter, bson.E{"menuID", params.MenuID})
+			filter["menuID"] = params.MenuID
 		}
 		if c.Query("SellerID") != "" {
-			filter = append(filter, bson.E{"sellerID", params.SellerID})
+			filter["sellerID"] = params.SellerID
 		}
 		if c.Query("SellerName") != "" {
-			filter = append(filter, bson.E{"sellerName", params.SellerName})
+			filter["sellerName"] = params.SellerName
 		}
 		if c.Query("MenuName") != "" {
-			filter = append(filter, bson.E{"menuName", params.MenuName})
+			filter["menuName"] = params.MenuName
 		}
 		if c.Query("Status") != "" {
-			filter = append(filter, bson.E{"status", params.Status})
+			filter["status"] = params.Status
 		}
 		if c.Query("MaxCount") != "" {
-			filter = append(filter, bson.E{"maxCount", params.MaxCount})
+			filter["maxCount"] = params.MaxCount
 		}
 		if c.Query("CountryOf") != "" {
-			filter = append(filter, bson.E{"countryOf", params.CountryOf})
+			filter["countryOf"] = params.CountryOf
 		}
 		if c.Query("Price") != "" {
-			filter = append(filter, bson.E{"price", params.Price})
+			filter["price"] = params.Price
 
 		}
 		if c.Query("Spicy") != "" {
-			filter = append(filter, bson.E{"spicy", params.Spicy})
+			filter["spicy"] = params.Spicy
 		}
 		if c.Query("Popularity") != "" {
-			filter = append(filter, bson.E{"popularity", params.Popularity})
-
+			filter["popularity"] = params.Popularity
 		}
 		if c.Query("IsRecommeded") != "" {
-			filter = append(filter, bson.E{"isRecommeded", params.IsRecommeded})
+			filter["isRecommeded"] = params.IsRecommeded
 
 		}
 		if c.Query("IsTdoayMenu") != "" {
-			filter = append(filter, bson.E{"isTdoayMenu", params.IsTdoayMenu})
+			filter["isTdoayMenu"] = params.IsTdoayMenu
 
 		}
 		if c.Query("Category") != "" {
-			filter = append(filter, bson.E{"category", params.Category})
+			filter["category"] = bson.M{"$all": params.Category}
 		}
 	} else {
 		logger.Error(err)
@@ -104,8 +111,34 @@ func SearchMenuAppendQuery(c *gin.Context, filter bson.D) (model.Menu, bson.D) {
 	return params, filter
 }
 
+/*
+수정내용
+validator를 사용해 파라메터의 min, max 체크(controller에서 호출)
+*/
+func validationCheck(menu model.Menu) map[string]interface{} {
+	v := validator.New()
+	if err := v.Struct(menu); err != nil {
+		resp := map[string]interface{}{
+			"message": err.Error(),
+		}
+		return resp
+	}
+	return nil
+}
+
 // @Description 메뉴 검색 - 속성 값 체크해서 검색 조건 리턴
 func UpdateMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
+
+	/*
+		1. Validator를 통해 Input 값을 제어하시면 좋을 것 같습니다.
+			min, max 값 혹은 들어오는 데이터에 대해서 검증하려면 Gin에서 제공하는 validtor 기능을 이용하시면 좋을 것 같습니다.
+			지금의 구조 같은 경우 판매 가능 갯수가 1~50이지만 그 외의 숫자가 들어와도 모두 가능하도록 되어 있습니다.
+
+			아래의 링크를 참고해보시기 바랍니다.
+			https://gin-gonic.com/docs/examples/custom-validators/
+		2. 카테고리의 경우 보통은 0개 ~ 2개 이상의 값을 지닙니다.
+			해당 구조에서 여러 카테고리에 속하는 경우는 어떻게 입력받을 수 있나요? 이 부분에 대한 고려가 필요해 보입니다.
+	*/
 
 	filter := bson.M{
 		"$set": bson.M{}}
@@ -154,73 +187,18 @@ func UpdateMenuAppendQuery(c *gin.Context) (model.Menu, bson.M) {
 		// 	filter["$set"].(bson.M)["todayMenu"] = params.TodayMenu
 
 		// }
-		if params.Category != "" {
+		/*
+			수정내용
+			메뉴 카테고리는 배열로 변경하여 0개 이상의 경우 수정
+		*/
+		if len(params.Category) > 0 {
 			filter["$set"].(bson.M)["category"] = params.Category
 		}
 	} else {
 		logger.Error(err)
 	}
+
 	return params, filter
-}
-
-// @Description Menu 구조체 파라메터 매핑
-func setParamMenu(c *gin.Context) model.Menu {
-
-	var params model.Menu
-
-	if c.PostForm("MenuID") != "" {
-		params.MenuID = c.PostForm("MenuID")
-	}
-	if c.PostForm("SellerID") != "" {
-		params.SellerID = c.PostForm("SellerID")
-	}
-	if c.PostForm("SellerName") != "" {
-		params.SellerName = c.PostForm("SellerName")
-	}
-	if c.PostForm("MenuName") != "" {
-		params.MenuName = c.PostForm("MenuName")
-	}
-	if c.PostForm("Status") != "" {
-		params.Status = c.PostForm("Status")
-	}
-	if c.PostForm("MaxCount") != "" {
-		if v, err := strconv.Atoi(c.PostForm("MaxCount")); err == nil {
-			params.MaxCount = v
-		}
-	}
-	if c.PostForm("CountryOf") != "" {
-		params.CountryOf = c.PostForm("CountryOf")
-	}
-	if c.PostForm("Price") != "" {
-		fmt.Println("fmt.Println(c.PostForm(Price))", c.PostForm("Price"))
-		if v, err := strconv.Atoi(c.PostForm("Price")); err == nil {
-			fmt.Println("v", v)
-			params.Price = v
-		}
-	}
-	if c.PostForm("Spicy") != "" {
-		params.Spicy = c.PostForm("Spicy")
-	}
-	if c.PostForm("Popularity") != "" {
-		if v, err := strconv.Atoi(c.PostForm("Popularity")); err == nil {
-			params.Popularity = v
-		}
-	}
-	if c.PostForm("IsRecommeded") != "" {
-		if v, err := strconv.ParseBool(c.PostForm("IsRecommeded")); err == nil {
-			params.IsRecommeded = v
-		}
-	}
-	if c.PostForm("IsTdoayMenu") != "" {
-		if v, err := strconv.ParseBool(c.PostForm("IsTdoayMenu")); err == nil {
-			params.IsTdoayMenu = v
-		}
-	}
-	if c.PostForm("Category") != "" {
-		params.Category = c.PostForm("Category")
-	}
-
-	return params
 }
 
 // @Description OrdererMenuLink 구조체 파라메터 매핑
@@ -261,58 +239,3 @@ func setParamOrdererMenuLink(c *gin.Context) model.OrdererMenuLink {
 	}
 	return params
 }
-
-// // @Description Seller 구조체 파라메터 매핑
-// func setParamSeller(c *gin.Context) model.Seller {
-
-// 	var params model.Seller
-
-// 	if c.PostForm("SellerID") != "" {
-// 		params.SellerID = c.PostForm("SellerID")
-// 	}
-// 	if c.PostForm("SellerName") != "" {
-// 		params.SellerName = c.PostForm("SellerName")
-// 	}
-// 	if c.PostForm("Address") != "" {
-// 		params.Address = c.PostForm("Address")
-// 	}
-// 	if c.PostForm("Phone") != "" {
-// 		if v, err := strconv.Atoi(c.PostForm("Phone")); err == nil {
-// 			params.Phone = v
-// 		}
-// 	}
-// 	if c.PostForm("SellCount") != "" {
-// 		if v, err := strconv.Atoi(c.PostForm("SellCount")); err == nil {
-// 			params.SellCount = v
-// 		}
-// 	}
-
-// 	return params
-// }
-
-// // @Description Order 구조체 파라메터 매핑
-// func setParamOrderer(c *gin.Context) model.Orderer {
-
-// 	var params model.Orderer
-
-// 	if c.PostForm("OrdererID") != "" {
-// 		params.OrdererID = c.PostForm("OrdererID")
-// 	}
-// 	if c.PostForm("OrderName") != "" {
-// 		params.OrderName = c.PostForm("OrderName")
-// 	}
-// 	if c.PostForm("Address") != "" {
-// 		params.Address = c.PostForm("Address")
-// 	}
-// 	if c.PostForm("Phone") != "" {
-// 		if v, err := strconv.Atoi(c.PostForm("Phone")); err == nil {
-// 			params.Phone = v
-// 		}
-// 	}
-// 	if c.PostForm("OrderCount") != "" {
-// 		if v, err := strconv.Atoi(c.PostForm("OrderCount")); err == nil {
-// 			params.OrderCount = v
-// 		}
-// 	}
-// 	return params
-// }
