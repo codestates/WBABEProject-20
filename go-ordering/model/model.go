@@ -115,7 +115,7 @@ func (p *Model) DeleteMenu(menuID string, isRecommededstr string) Menu {
 }
 
 // 메뉴 검색 - 주문자, 피주문자
-func (p *Model) SearchMenu(filter bson.D) []Menu {
+func (p *Model) SearchMenu(filter bson.M) []Menu {
 	fmt.Println("[model.SearchMenu Param] ", filter)
 
 	cursor, err := p.colMenu.Find(context.TODO(), filter)
