@@ -32,9 +32,16 @@ func NewCTL(rep *model.Model) (*Controller, error) {
 func (p *Controller) CreateMenu(c *gin.Context) {
 	logger.Info("[controller.CreateMenu] start...")
 
+	req := c.Request
+	req.ParseForm()
+	r := req.Form
+	for k, v := range r {
+		fmt.Println(fmt.Sprintf("%s=%v", k, v))
+	}
+
 	var params model.Menu
 	if err := c.ShouldBind(&params); err == nil {
-		fmt.Println("[controller.CreateMenu] params :", params)
+		fmt.Println("[controller.CreateMenu] params :", params.Category)
 		sellerID := params.SellerID
 		//메뉴 등록시 판매자 로그인 필수.
 		/*
@@ -50,7 +57,9 @@ func (p *Controller) CreateMenu(c *gin.Context) {
 			return
 		}
 
-		filter := bson.D{{"sellerID", params.SellerID}, {"menuName", params.MenuName}}
+		filter := bson.M{"sellerID": params.SellerID}
+		filter["menuName"] = params.MenuName
+
 		menus := p.md.SearchMenu(filter)
 		for _, menu := range menus {
 			logger.Info("[controller.CreateMenu] MenuName...", menu.MenuName)
@@ -98,7 +107,14 @@ func (p *Controller) UpdateMenu(c *gin.Context) {
 	fmt.Println("[controller.UpdateMenu] menu...", menu)
 	fmt.Println("[controller.UpdateMenu] updateFilter...", updateFilter)
 
-	c.JSON(http.StatusOK, p.md.UpdateMenu(menuID, menu, updateFilter))
+	resp := validationCheck(menu)
+	fmt.Println("[controller.UpdateMenu] resp...", resp)
+
+	if resp != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, resp)
+	} else {
+		c.JSON(http.StatusOK, p.md.UpdateMenu(menuID, menu, updateFilter))
+	}
 }
 
 // DeleteMenu godoc
@@ -149,8 +165,12 @@ func (p *Controller) DeleteMenu(c *gin.Context) {
 func (p *Controller) SearchMenu(c *gin.Context) {
 	logger.Info("[controller.SearchMenu] start...")
 
-	filter := bson.D{}
-	_, filter = SearchMenuAppendQuery(c, filter) //검색 조건 쿼리 추가
+	/*
+		수정내용
+		카테고리 배열 변경으로 검색 조건 변경
+	*/
+	_, filter := SearchMenuAppendQuery(c) //검색 조건 쿼리 추가
+
 	fmt.Println("[controller.SearchMenu] filter : ", filter)
 	c.JSON(http.StatusOK, p.md.SearchMenu(filter))
 
@@ -222,11 +242,14 @@ func (p *Controller) SetTodayMenu(c *gin.Context) {
 func (p *Controller) SearchTodayMenu(c *gin.Context) {
 	logger.Info("[controller.SearchMenu] start...")
 
-	filter := bson.D{}
-	_, filter = SearchMenuAppendQuery(c, filter)
+	/*
+		수정내용
+		카테고리 배열 변경으로 검색 조건 변경
+	*/
+	_, filter := SearchMenuAppendQuery(c)
 
 	//오늘의 추천메뉴 true 조회
-	filter = append(filter, bson.E{"todayMenu", true})
+	filter["isTdoayMenu"] = true
 
 	fmt.Println("[controller.SetTodayMenu filter]", filter)
 	c.JSON(http.StatusOK, p.md.SearchMenu(filter))
