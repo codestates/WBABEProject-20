@@ -48,7 +48,7 @@ type Menu struct {
 		IsDisabled > IsRecommeded
 		TodayMenu > IsTdoayMenu
 	*/
-	IsRecommeded bool `bson:"isDisabled"` //판매여부 default(true)
+	IsRecommeded bool `bson:"isRecommeded"` //판매여부 default(true)
 	/*
 		TodayMenu만 보고서는 bool 값인지 유추하기가 힘들어 보입니다. 현재는 오늘의 메뉴가 무엇인지 하는 String 데이터가 예상이 됩니다.
 		따라서 IsRecommeded, IsTdoayMenu 과 같은 네이밍이 적절해 보입니다.
