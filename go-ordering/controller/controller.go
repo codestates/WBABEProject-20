@@ -292,7 +292,7 @@ func (p *Controller) NewOrder(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, "완판되었습니다.")
 			return
 		}
-
+		params.SellerID = menu.SellerID
 		c.JSON(http.StatusOK, p.md.NewOrder(params))
 
 	} else {
