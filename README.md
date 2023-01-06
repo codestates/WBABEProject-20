@@ -247,11 +247,12 @@ type UserAccount struct {
  {
   "orderComment": "맛있습니다.",
   "orderNo": "5ca65c501bc8409ca92a2a9496170943",
-  "orderStarGrade": 5
+  "orderStarGrade": 5,
+  "ordererID" : "KIM"
  }
  </code></pre>
- ![image](https://user-images.githubusercontent.com/119834304/209765961-5702d317-a2e3-4a99-9840-1df13974af31.png)
- ![image](https://user-images.githubusercontent.com/119834304/209766093-dd653545-1429-459d-90ce-9c07b23abcbe.png)
+ ![image](https://user-images.githubusercontent.com/119834304/211040540-7496e871-7923-4dfc-a913-7960417dae4d.png)
+ ![image](https://user-images.githubusercontent.com/119834304/211040606-0160c73f-91a2-43f6-a34f-ed2143180dfe.png)
  
  #### /oos/order/searchTodayMenu // @Description  오늘의 추천메뉴 리스트
  ![image](https://user-images.githubusercontent.com/119834304/209766156-e8cfd9ea-c3e6-4cc4-94c4-cfa108d107a4.png)
