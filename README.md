@@ -93,7 +93,7 @@
 	Price      int    `bson:"price"`                             //가격
 	Spicy      string `bson:"spicy"`                             //맵기 Enums(아주매움, 매움, 보통, 순한맛)
 	Popularity int    `bson:"popularity" validate:"min=1,max=5"` //인기도 mininum(1) maxinum(5)
-	IsRecommeded bool `bson:"isDisabled"` 			     //판매여부 default(true)
+	IsRecommeded bool `bson:"isRecommeded"` 		     //판매여부 default(true)
 	IsTdoayMenu bool `bson:"isTdoayMenu"` 			     //오늘의 추천메뉴 여부 default(false)
 	Category []string `bson:"category"`			     //메뉴 카테고리 Enums(한식, 일식, 중식)
 }
