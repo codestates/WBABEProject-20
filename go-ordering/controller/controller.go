@@ -270,26 +270,28 @@ func (p *Controller) NewOrder(c *gin.Context) {
 	var params model.OrdererMenuLink
 	if err := c.ShouldBind(&params); err == nil {
 
-		menuID := params.MenuID
-		if menuID == "" { //메뉴ID체크
-			logger.Info("[controller.NewOrder] menuID...", menuID)
-			errMsg := "등록된 메뉴 ID를 입력해주세요."
+		/*
+			수정내용
+			유저 체크 및 조건 추가
+		*/
+		user := p.md.GetUserAccount(params.OrdererID)
+		errChk, errMsg := checkOrder(params, user)
+		if errChk {
 			logger.Error(errMsg)
 			c.JSON(http.StatusBadRequest, errMsg)
 			return
 		}
+
+		menuID := params.MenuID
 		//주문 상태를 확인해서 취소 가능 상태 제어
 		menu := p.md.ViewMenu(menuID)
-		if menu.IsRecommeded {
+		if !menu.IsRecommeded {
 			c.JSON(http.StatusBadRequest, "주문할 수 없는 메뉴 입니다.")
 			return
 		} else if menu.Status == "판매완료" {
 			c.JSON(http.StatusBadRequest, "완판되었습니다.")
 			return
 		}
-
-		params.MenuName = menu.MenuName
-		params.SellerID = menu.SellerID
 
 		c.JSON(http.StatusOK, p.md.NewOrder(params))
 
@@ -314,6 +316,12 @@ func (p *Controller) OrderStatus(c *gin.Context) {
 
 	orderStatus := c.Query("OrderStatus")
 	sellerID := c.Query("SellerID")
+
+	user := p.md.GetUserAccount(sellerID)
+	if user.UserType != "판매자" {
+		c.JSON(http.StatusBadRequest, "판매자만 확인할 수 있습니다.")
+		return
+	}
 
 	fmt.Println("[controller.OrderStatus Param]", orderStatus, sellerID)
 	c.JSON(http.StatusOK, gin.H{"주문내역 리스트 ": p.md.OrderStatus(orderStatus, sellerID)})
@@ -412,6 +420,13 @@ func (p *Controller) SearchOrder(c *gin.Context) {
 	params.MenuName = c.Query("MenuName")
 	params.OrderStatus = c.Query("OrderStatus")
 
+	//로그인 유저가 주문자 인지 체크
+	user := p.md.GetUserAccount(params.OrdererID)
+	if user.UserType != "주문자" {
+		c.JSON(http.StatusBadRequest, "주문할 수 없는 유저 입니다.")
+		return
+	}
+
 	fmt.Println("[model.SearchOrder params] ", params)
 
 	c.JSON(http.StatusOK, p.md.SearchOrder(params))
@@ -438,6 +453,14 @@ func (p *Controller) CreateReview(c *gin.Context) {
 
 	var params model.OrdererMenuLink
 	if err := c.ShouldBind(&params); err == nil {
+
+		//주문한 유저와 로그인 유저가 동일한지 체크
+		omLink := p.md.ViewOrder(params.OrderNo)
+		if params.SellerID != omLink.SellerID {
+			c.JSON(http.StatusBadRequest, "리뷰할 권한이 없는 유저 입니다.")
+			return
+		}
+
 		c.JSON(http.StatusOK, p.md.CreateReview(params))
 	} else {
 		logger.Error(err)
