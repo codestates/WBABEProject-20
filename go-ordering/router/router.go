@@ -101,7 +101,6 @@ func (p *Router) Idx() *gin.Engine {
 				HTTP URI의 이름에 위와 같은 단어가 들어가는 것이 아닌,
 				/order/menu 라는 URI로 GET을 한다면 메뉴에 대한 정보를 가져오는 것, POST 라면 메뉴를 생성하는 것, PATCH 라면 메뉴 정보를 업데이트하는 것과 같은 패턴으로 구성을 하셔야 합니다.
 		*/
-
 		seller.POST("/menu", p.ct.CreateMenu)
 		/*
 			메뉴에 대한 정보를 업데이트하는 것은 POST가 아니라 PUT, 혹은 PATCH가 되어야 합니다.
