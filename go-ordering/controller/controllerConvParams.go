@@ -46,6 +46,28 @@ func checkCreateMenu(param model.Menu, user model.UserAccount) (bool, string) {
 	return errChk, errMsg
 }
 
+// @Description 주문 등록시 주문자 ID 체크 (로그인 여부)
+func checkOrder(param model.OrdererMenuLink, user model.UserAccount) (bool, string) {
+	errChk := false
+	errMsg := ""
+
+	if user.UserType != "주문자" {
+		errMsg = "로그인 유저가 주문자가 아닌 경우 주문할 수 없습니다."
+		errChk = true
+	}
+	//메뉴 등록시 판매자 로그인 필수.
+	if param.OrdererID == "" {
+		errMsg = "로그인해주세요. (판매자 ID (SellerID)는 필수 입니다.)"
+		errChk = true
+	}
+	if param.MenuID == "" {
+		errMsg = "메뉴 선택(ID)은 필수 입니다.)"
+		errChk = true
+	}
+
+	return errChk, errMsg
+}
+
 /*
 	수정내용
 	카테고리 배열 변경으로 검색 조건 변경
