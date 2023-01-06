@@ -62,6 +62,9 @@
  
  #uuid
  $ go get github.com/google/uuid
+ 
+ #validator
+ $ get github.com/go-playground/validator
  </code></pre>
  
  ## 4. DataBase
@@ -92,7 +95,7 @@
 	Popularity int    `bson:"popularity"` //인기도 mininum(1) maxinum(5)
 	IsDisabled bool   `bson:"isDisabled"` //판매여부 default(true)
 	TodayMenu  bool   `bson:"todayMenu"`  //오늘의 추천메뉴 여부 default(false)
-	Category   string `bson:"category"`   //메뉴 카테고리 Enums(한식, 일식, 중식)
+	Category[] string `bson:"category"`   //메뉴 카테고리 Enums(한식, 일식, 중식)
 }
 
 type OrdererMenuLink struct {
@@ -146,13 +149,13 @@ type UserAccount struct {
 
  #### /oos/seller/menu [POST]     // @Description  메뉴 등록 - 피주문자
  <pre><code>
- {
-  "category": "중식",
+  {
+  "category":  ["한식","중식"],
   "countryOf": "대한민국",
   "isRecommeded": true,
   "maxCount": 20,
-  "menuName": "삼선짜장",
-  "price": 6500,
+  "menuName": "마라탕면",
+  "price": 9000,
   "sellerID": "LEE",
   "sellerName": "리반점",
   "spicy": "보통",
@@ -160,20 +163,22 @@ type UserAccount struct {
   "isTdoayMenu": true
  }
  </code></pre>
- ![image](https://user-images.githubusercontent.com/119834304/210488284-2070cf6d-9a14-459d-a1b2-128106b6ceae.png)
- ![image](https://user-images.githubusercontent.com/119834304/210488316-77a2a52d-f977-4af5-b40e-bb22de49d9a4.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210969409-6cacebe4-ceee-42bd-9487-40289c2926e3.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210969477-7f6bd7e9-21e4-498e-a2a8-0a0d5376e93d.png)
 
  #### /oos/seller/menu/{menuID} [PUT]     // @Description  메뉴 수정 - 피주문자 (메뉴ID를 기준으로 메뉴 업데이트)
  <pre><code>
  "menuID": "ee097877-2878-43da-b312-f72f4a233089"
- {
+  {
+  "category":  ["일식","중식"],
   "countryOf": "중국",
-  "price": 8500,
-  "spicy": "매움"
+  "popularity" : 4,
+  "maxCount" : 20,
+  "isRecommeded": true
  }
  </code></pre>
- ![image](https://user-images.githubusercontent.com/119834304/210488460-7253a5ea-2dc0-4bf2-b803-831107bdfa70.png)
- ![image](https://user-images.githubusercontent.com/119834304/210488487-262525fe-8f0d-49d1-a6ce-256deb9db549.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210969628-550c8431-a9ff-4872-9315-a253ff24b3b7.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210969747-11cd23fd-6446-498d-8fed-75254faf160e.png)
 
  #### /oos/seller/menu [DELETE]     // @Description  메뉴 삭제 - 피주문자 (판매여부 bool 설정변경)
  <pre><code>
@@ -184,8 +189,8 @@ type UserAccount struct {
  ![image](https://user-images.githubusercontent.com/119834304/210489832-042bdb5d-8c7d-45f4-8fb0-c33f0ca827ec.png)
 
  #### /oos/seller/menu [GET]     // @Description  메뉴 검색 - 주문자, 피주문자
- ![image](https://user-images.githubusercontent.com/119834304/210492938-03019ca1-2571-4934-b4af-737f27da67cb.png)
- ![image](https://user-images.githubusercontent.com/119834304/210492978-09994142-7dec-4f3e-8b52-ec447df99c70.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210970535-2506291d-4679-448b-a8fc-01999e06463d.png)
+ ![image](https://user-images.githubusercontent.com/119834304/210970597-31b55498-9ecc-4966-a7a3-a3cd975a49c7.png)
  
  #### /oos/seller/orderStatus    // @Description  주문 내역 조회 - 피주문자 (판매자ID 기준으로 검색)
  ![image](https://user-images.githubusercontent.com/119834304/209762474-060f077c-846f-49b1-80c9-116b49031f48.png)
@@ -212,7 +217,6 @@ type UserAccount struct {
  </code></pre>
  ![image](https://user-images.githubusercontent.com/119834304/209763399-747450cb-e385-438a-8d3a-6dbd35c97124.png)
  ![image](https://user-images.githubusercontent.com/119834304/209763425-90992dc2-ed49-442e-ba2a-3d76e6390122.png)
-
  
  #### /oos/order/viewMenu        // @Description  주문 상세 - 주문자, 피주문자
  ![image](https://user-images.githubusercontent.com/119834304/209763487-8cc40104-bb36-483a-81c1-6e5e3cb07eea.png)
@@ -248,7 +252,6 @@ type UserAccount struct {
  </code></pre>
  ![image](https://user-images.githubusercontent.com/119834304/209765961-5702d317-a2e3-4a99-9840-1df13974af31.png)
  ![image](https://user-images.githubusercontent.com/119834304/209766093-dd653545-1429-459d-90ce-9c07b23abcbe.png)
-
  
  #### /oos/order/searchTodayMenu // @Description  오늘의 추천메뉴 리스트
  ![image](https://user-images.githubusercontent.com/119834304/209766156-e8cfd9ea-c3e6-4cc4-94c4-cfa108d107a4.png)
